@@ -39,7 +39,7 @@ tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
 ./google-cloud-sdk/install.sh
 ```
 * (3.4) Setup Google Credential 
-    * download Google Credential file (a sample Credential file is included in crms github repository)
+    * download Google Credential file (contact your administrator of Google Cloud Project)
     * set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
 ```sh
 export GOOGLE_APPLICATION_CREDENTIALS=”/home/<your_account>/crms/gcp-test-credential-40af2b7c6ab4.json”
