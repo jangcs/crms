@@ -42,7 +42,7 @@ tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
     * download Google Credential file (contact your administrator of Google Cloud Project)
     * set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
 ```sh
-export GOOGLE_APPLICATION_CREDENTIALS=”/home/<your_account>/crms/gcp-test-credential-40af2b7c6ab4.json”
+export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
 ```
 * (3.5) bug fix of protobuf
 ```sh
