@@ -66,7 +66,7 @@ ssh-keyscan github.com > ~/.ssh/known_hosts
 * And, the generated SSH key has to be registered to github.com in order to push a model     
     * Login github.com -> Settings/SSH and GPG keys -> [New SSH Key] Button -> Copy the contents of ~/.ssh/id_rsa.pub to Key box -> [Add SSH Key] Button
 
-* (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='gcp-test-710302')
+* (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
 ```sh
 export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
