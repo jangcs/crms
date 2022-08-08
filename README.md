@@ -41,6 +41,7 @@ tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
 * (3.4) Setup Google Credential 
     * download Google Credential file (contact administrator of your Google Cloud Project)
         * Access permission of credential may be one of reading or writing (writing permission is necessary for full test)
+        * In case of reading permission, crms push command is not allowed (crms list/desc/pull commands are allowed) 
     * set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
 ```sh
 export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
