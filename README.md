@@ -39,7 +39,8 @@ tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
 ./google-cloud-sdk/install.sh
 ```
 * (3.4) Setup Google Credential 
-    * download Google Credential file (contact your administrator of Google Cloud Project)
+    * download Google Credential file (contact administrator of your Google Cloud Project)
+        * Access permission of credential may be one of reading or writing (writing permission is necessary for full test)
     * set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
 ```sh
 export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
