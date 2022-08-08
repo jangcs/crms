@@ -25,8 +25,9 @@ echo "* Working directory is" "`pwd`"
 
 
 echo "* CRMS config"
-# replace replaced_id with your github id
-../crms conf git@github.com:IdToBeReplaced/"$dir".git gs://cr-model-test/$dir
+#../crms conf git@github.com:jangcs/"$dir".git gs://cr-model-test/models/$dir
+../crms conf git@github.com:jangcs/"$dir".git gs://cr-model/$dir
+#../crms conf https://github.com/jangcs/"$dir".git gs://cr-model-test/$dir
 
 echo "* CRMS init with model name(""$dir"")"
 ../crms init $dir
