@@ -39,3 +39,12 @@ echo "* CRMS add a model file"
 
 echo "* CRMS push (version 0.1)"
 ../crms push v0.1 
+
+
+echo "* CRMS list"
+../crms list
+
+echo "* CRMS desc a model"
+../crms desc $dir
+
+
