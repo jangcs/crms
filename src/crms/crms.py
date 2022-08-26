@@ -16,6 +16,8 @@ from firebase_admin import firestore
 #CRMS_META_REPOSITORY = ''
 CRMS_META_REPOSITORY = os.getenv('CRMS_META_REPOSITORY','cloudrobotai')
 
+firebase_app = None
+
 def append_label_sample(f) :
     f.write('#labels : \n')
     f.write('#  label_key1: lavel_value1\n')
@@ -236,8 +238,9 @@ def crms_init_api(arg_model_name):
 #         #     f.write("git_remote : {}\n".format(url))
 
     if CRMS_META_REPOSITORY != '' :
-        firebase_options = {'projectId':CRMS_META_REPOSITORY}
-        firebase_app = firebase_admin.initialize_app(options=firebase_options)
+        if firebase_app == None :
+            firebase_options = {'projectId':CRMS_META_REPOSITORY}
+            firebase_app = firebase_admin.initialize_app(options=firebase_options)
         db = firestore.client()
         doc_ref = db.collection('models').document(arg_model_name)   # DocumentReference
         doc_ref.set({'name': model_name, 
@@ -388,8 +391,9 @@ def crms_push_api(arg_version) :
 
 
     if CRMS_META_REPOSITORY != '' :
-        firebase_options = {'projectId':CRMS_META_REPOSITORY}
-        firebase_app = firebase_admin.initialize_app(options=firebase_options)
+        if firebase_app == None :
+            firebase_options = {'projectId':CRMS_META_REPOSITORY}
+            firebase_app = firebase_admin.initialize_app(options=firebase_options)
         db = firestore.client()
 
         last_tag = ''
@@ -469,8 +473,9 @@ def crms_desc_api(arg_model_name):
     print("CRMS DESC....")
     
     if CRMS_META_REPOSITORY != '' :
-        firebase_options = {'projectId':CRMS_META_REPOSITORY}
-        firebase_app = firebase_admin.initialize_app(options=firebase_options)
+        if firebase_app == None :
+            firebase_options = {'projectId':CRMS_META_REPOSITORY}
+            firebase_app = firebase_admin.initialize_app(options=firebase_options)
         db = firestore.client()
         # doc_ref = db.collection('models').document(args.model_name)   # DocumentReference
 
@@ -507,8 +512,9 @@ def crms_list_api():
     print("CRMS LIST....")
     
     if CRMS_META_REPOSITORY != '' :
-        firebase_options = {'projectId':CRMS_META_REPOSITORY}
-        firebase_app = firebase_admin.initialize_app(options=firebase_options)
+        if firebase_app == None :
+            firebase_options = {'projectId':CRMS_META_REPOSITORY}
+            firebase_app = firebase_admin.initialize_app(options=firebase_options)
         db = firestore.client()
         # doc_ref = db.collection('models').document(args.model_name)   # DocumentReference
 
