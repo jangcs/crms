@@ -154,7 +154,7 @@ def set_git_remote(git_remote):
 
 def crms_init_api(arg_model_name):
 
-   dir_path = os.getcwd()
+    dir_path = os.getcwd()
     #### Checke CRMS Config File Existence
     path_config = os.path.join(dir_path, ".crms", "config")
     if not os.path.exists(path_config) :
