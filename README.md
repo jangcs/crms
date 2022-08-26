@@ -1,4 +1,4 @@
-# Under re-packaging - Do Not Use
+# Under Re-packaging - Do Not Use This Package While Re-packaging
 
 **CRMS CLI Installation**
 ===
