@@ -16,7 +16,7 @@ from firebase_admin import firestore
 #CRMS_META_REPOSITORY = ''
 CRMS_META_REPOSITORY = os.getenv('CRMS_META_REPOSITORY','cloudrobotai')
 
-global firebase_app = None
+firebase_app = None
 
 def append_label_sample(f) :
     f.write('#labels : \n')
@@ -238,6 +238,7 @@ def crms_init_api(arg_model_name):
 #         #     f.write("git_remote : {}\n".format(url))
 
     if CRMS_META_REPOSITORY != '' :
+        global firebase_app
         if firebase_app == None :
             firebase_options = {'projectId':CRMS_META_REPOSITORY}
             firebase_app = firebase_admin.initialize_app(options=firebase_options)
@@ -391,6 +392,7 @@ def crms_push_api(arg_version) :
 
 
     if CRMS_META_REPOSITORY != '' :
+        global firebase_app
         if firebase_app == None :
             firebase_options = {'projectId':CRMS_META_REPOSITORY}
             firebase_app = firebase_admin.initialize_app(options=firebase_options)
@@ -473,6 +475,7 @@ def crms_desc_api(arg_model_name):
     print("CRMS DESC....")
     
     if CRMS_META_REPOSITORY != '' :
+        global firebase_app
         if firebase_app == None :
             firebase_options = {'projectId':CRMS_META_REPOSITORY}
             firebase_app = firebase_admin.initialize_app(options=firebase_options)
@@ -512,6 +515,7 @@ def crms_list_api():
     print("CRMS LIST....")
     
     if CRMS_META_REPOSITORY != '' :
+        global firebase_app
         if firebase_app == None :
             firebase_options = {'projectId':CRMS_META_REPOSITORY}
             firebase_app = firebase_admin.initialize_app(options=firebase_options)
