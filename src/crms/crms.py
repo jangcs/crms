@@ -474,7 +474,7 @@ def crms_desc_api(arg_model_name):
         db = firestore.client()
         # doc_ref = db.collection('models').document(args.model_name)   # DocumentReference
 
-        doc = db.collection('models').document(arg_model_name.get()   # DocumentReference
+        doc = db.collection('models').document(arg_model_name).get()   # DocumentReference
         if doc.exists :
             docs = [doc]
         else :
