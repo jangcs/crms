@@ -55,7 +55,7 @@ def crms_conf_api(arg_git_remote, arg_dvc_remote) :
                              'version':'',
                              'device':'cpu'} 
               } 
-    
+
     path_config = os.path.join(path_crms, "config")
     with open(path_config, 'w') as f:
         yaml.dump(configs, f, sort_keys=False)
@@ -151,9 +151,10 @@ def set_git_remote(git_remote):
     origin = repo.create_remote('origin', git_remote)
     print("CRMS added Git remote (" + git_remote + ")")
 
-def crms_init(args):
 
-    dir_path = os.getcwd()
+def crms_init_api(arg_model_name):
+
+   dir_path = os.getcwd()
     #### Checke CRMS Config File Existence
     path_config = os.path.join(dir_path, ".crms", "config")
     if not os.path.exists(path_config) :
@@ -165,7 +166,7 @@ def crms_init(args):
         configs = yaml.load(f, Loader=yaml.FullLoader)
         print(configs)
 
-    model_name = args.model_name
+    model_name = arg_model_name
     model_name_split = model_name.split(':')
     last_tag = ''
     if len(model_name_split) > 1 :
@@ -238,7 +239,7 @@ def crms_init(args):
         firebase_options = {'projectId':CRMS_META_REPOSITORY}
         firebase_app = firebase_admin.initialize_app(options=firebase_options)
         db = firestore.client()
-        doc_ref = db.collection('models').document(args.model_name)   # DocumentReference
+        doc_ref = db.collection('models').document(arg_model_name)   # DocumentReference
         doc_ref.set({'name': model_name, 
                     'git_repository': configs['git']['remote'], 
                     'dvc_repository':configs['dvc']['remote'],
@@ -249,13 +250,16 @@ def crms_init(args):
                         'device'       : configs['platform']['device'] 
                     }})
 
+def crms_init(args):
+    arg_model_name = args.model_name
+    crms_init_api(arg_model_name)
 
-def crms_add(args):
+def crms_add_api(arg_model_files):
     # List to be added to Git
     git_add_list = ['.dvcignore', '.dvc/config', '.gitignore', '.crms/config']  # + *.dvc
 
     # Check model files to be added
-    model_files = args.model_files
+    model_files = arg_model_files
     if len(model_files) == 0 :
         print("Error: File list is required to be added.")
 
@@ -304,9 +308,13 @@ def crms_add(args):
     commitMsg="CRMS model files(" + ', '.join(s for s in model_files) + ") for model(" + configs['model']['name'] + ") are added."
     repo.index.commit(commitMsg)
     print("CRMS added auxiliary files(" + ', '.join(s for s in git_add_list) + ") to GIT")
+ 
+def crms_add(args):
+    arg_model_files = args.model_files
+    crms_add_api(arg_model_files)
 
 
-def crms_push(args):
+def crms_push_api(arg_version) :
 
     #### Check CRMS Config File Existence
     dir_path = os.getcwd()
@@ -343,7 +351,7 @@ def crms_push(args):
         sys.exit(-1)
 
 
-    tagName = args.version
+    tagName = arg_version
     print("Creating TagReference.")
     git.refs.tag.TagReference.create(repo, tagName)
 
@@ -396,24 +404,29 @@ def crms_push(args):
 
 
     print("CRMS PUSHED....")
+    
 
-def crms_pull(args):
+def crms_push(args):
+    arg_version = args.version
+    crms_push_api(arg_version)
+
+def crms_pull_api(arg_model_url, arg_version, arg_target=''):
     print("CRMS PULL....")
     
-    if args.target != '' :
-        target = args.target
+    if arg_target != '' :
+        target = arg_target
     else :
         # target = os.path.join( os.getcwd(), args.model_name)
         # target = os.path.join( os.getcwd(), "model_crms")
-        target = os.path.join( os.getcwd(), os.path.basename(args.model_url).split('.')[0] )   # git@github.com:jangcs/KKK.git -> KKK.git -> ['KKK', 'git']
+        target = os.path.join( os.getcwd(), os.path.basename(arg_model_url).split('.')[0] )   # git@github.com:jangcs/KKK.git -> KKK.git -> ['KKK', 'git']
         
     # repo = Repo.clone_from("git@github.com:jangcs/KKK.git", os.getcwd() )
-    modified_model_url = args.model_url.replace('git@github.com:','https://github.com/',1)
+    modified_model_url = arg_model_url.replace('git@github.com:','https://github.com/',1)
 
     print("crms_pull from "+ modified_model_url)
     repo = Repo.clone_from(modified_model_url, target )
 
-    if args.version == 'latest' : 
+    if arg_version == 'latest' : 
         os.chdir(target)
         p = subprocess.run(["dvc", "pull"])
         if p.returncode == 0 : # success of subprocess.run
@@ -422,7 +435,7 @@ def crms_pull(args):
             print("CRMS failed to pull model files...")
             sys.exit(-1)
     else :
-        past_branch = repo.create_head('crms_target', args.version)
+        past_branch = repo.create_head('crms_target', arg_version)
         repo.heads.crms_target.checkout()
 
         os.chdir(target)
@@ -437,7 +450,22 @@ def crms_pull(args):
         # repo.delete_head('crms_target')
 
 
-def crms_desc(args):
+def crms_pull(args):
+    
+    if args.target != '' :
+        arg_target = args.target
+    else :
+        # target = os.path.join( os.getcwd(), args.model_name)
+        # target = os.path.join( os.getcwd(), "model_crms")
+        arg_target = os.path.join( os.getcwd(), os.path.basename(args.model_url).split('.')[0] )   # git@github.com:jangcs/KKK.git -> KKK.git -> ['KKK', 'git']
+
+    arg_model_url = args.model_url
+    arg_version = args.version
+
+    crms_pull_api(arg_model_url, arg_version, arg_target)
+
+
+def crms_desc_api(arg_model_name):
     print("CRMS DESC....")
     
     if CRMS_META_REPOSITORY != '' :
@@ -446,11 +474,11 @@ def crms_desc(args):
         db = firestore.client()
         # doc_ref = db.collection('models').document(args.model_name)   # DocumentReference
 
-        doc = db.collection('models').document(args.model_name).get()   # DocumentReference
+        doc = db.collection('models').document(arg_model_name.get()   # DocumentReference
         if doc.exists :
             docs = [doc]
         else :
-            docs = db.collection('models').where('name', '==', args.model_name).stream()   # DocumentReference
+            docs = db.collection('models').where('name', '==', arg_model_name).stream()   # DocumentReference
 
         for doc in docs:
             print(doc.id)
@@ -470,6 +498,11 @@ def crms_desc(args):
     else :
         print("CRMS_META_REPOSITORY is not defined...")
 
+
+def crms_desc(args):
+    arg_model_name = args.model_name
+    crms_desc_api(arg_model_name)
+    
 def crms_list_api():
     print("CRMS LIST....")
     
@@ -487,11 +520,9 @@ def crms_list_api():
         print("CRMS_META_REPOSITORY is not defined...")
    
 
-
 def crms_list(args):
     crms_list_api()
    
-
 
 def crms(args):
     if args.cmd == 'conf':
