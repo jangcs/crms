@@ -16,7 +16,7 @@ from firebase_admin import firestore
 #CRMS_META_REPOSITORY = ''
 CRMS_META_REPOSITORY = os.getenv('CRMS_META_REPOSITORY','cloudrobotai')
 
-firebase_app = None
+global firebase_app = None
 
 def append_label_sample(f) :
     f.write('#labels : \n')
