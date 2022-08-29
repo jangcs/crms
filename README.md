@@ -14,11 +14,9 @@ git config --global user.name “Your Name”
 git config --global user.email your-email@xxx.com
 ```
 
-## (1) Download crms from github and add the PATH to .bashrc
+## (1) Download crms from github and install with pip3
 ```sh
 git clone https://github.com/jangcs/crms.git
-```
-```sh
 cd crms
 pip3 install .
 ```
