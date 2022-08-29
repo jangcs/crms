@@ -1,5 +1,3 @@
-## Under Re-packaging - Do Not Use This Package Until Completion
-
 **CRMS CLI Installation**
 ===
 ## (0) Preparation
@@ -88,6 +86,3 @@ sed -i 's/IdToBeReplaced/<your_github_account>/g' test.sh
 ```sh
 /test.sh model_test
 ```
-
-
-
