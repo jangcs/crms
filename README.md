@@ -39,8 +39,8 @@ pip3 install protobuf==3.20.1
 export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
 
-## (2) Download crms from github and install with pip3
-* (2.1) For full test :
+## (2) Install crms from Github or PyPi 
+* (2.1) For full test : Download crms from Github and install with pip3
 ```sh
 git clone https://github.com/jangcs/crms.git
 cd crms
@@ -50,7 +50,7 @@ pip3 install .
 echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
 source ~/.bashrc
 -->
-* (2.2) For just installation from PyPi
+* (2.2) For just install (not for test): Install from PyPi
 ```sh
 pip3 install crms
 ```
