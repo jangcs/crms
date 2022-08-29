@@ -51,7 +51,9 @@ echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
 source ~/.bashrc
 -->
 * (2.2) For just installation from PyPi
+```sh
 pip3 install crms
+```
 
 
 ## (3) Install DVC for Google Cloud Storage
