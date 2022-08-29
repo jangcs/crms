@@ -40,6 +40,7 @@ export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
 
 ## (2) Download crms from github and install with pip3
+* (2.1) For full test :
 ```sh
 git clone https://github.com/jangcs/crms.git
 cd crms
@@ -49,6 +50,8 @@ pip3 install .
 echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
 source ~/.bashrc
 -->
+* (2.2) For just installation from PyPi
+pip3 install crms
 
 
 ## (3) Install DVC for Google Cloud Storage
