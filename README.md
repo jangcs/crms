@@ -36,6 +36,10 @@ export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credenti
 ```sh
 pip3 install protobuf==3.20.1
 ```
+* (1.6) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
+```sh
+export CRMS_META_REPOSITORY=your-google-cloud-project
+```
 
 ## (2) Download crms from github and install with pip3
 ```sh
@@ -73,16 +77,10 @@ ssh-keyscan github.com > ~/.ssh/known_hosts
 
 
 ## (5) Test crms cli
-* (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
-```sh
-export CRMS_META_REPOSITORY=your-google-cloud-project
-```
-
 * Modify the line in test.sh, 'crms conf git@github.com:IdToBeReplaced/...' to your github account 
 ```sh
 sed -i 's/IdToBeReplaced/<your_github_account>/g' test.sh
 ```
-
 * Add a repository to github (ex. model_test)
     * Login github.com -> [New] Button -> Create a New Repository -> Enter a repository name(ex. model_test) -> [Create repository] Button
 
