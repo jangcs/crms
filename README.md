@@ -21,11 +21,12 @@ git clone https://github.com/jangcs/crms.git
 ```sh
 cd crms
 pip3 install .
+```
 <!-- 
 echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
 source ~/.bashrc
 -->
-```
+
 
 <!--
 ## (2) Install DVC
