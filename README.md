@@ -67,24 +67,24 @@ pip3 install firebase_admin
 ```
 -->
 ## (4) Prepare ssh key for github
-* SSH key has to be generated for secure connection with github.com    
+* (4.1) SSH key has to be generated for secure connection with github.com    
 ```
 ssh-keygen
 ssh-keyscan github.com > ~/.ssh/known_hosts
 ```
-* And, the generated SSH key has to be registered to github.com in order to push a model     
+* (4.2) And, the generated SSH key has to be registered to github.com in order to push a model     
     * Login github.com -> Settings/SSH and GPG keys -> [New SSH Key] Button -> Copy the contents of ~/.ssh/id_rsa.pub to Key box -> [Add SSH Key] Button
 
 
 ## (5) Test crms cli
-* Modify the line in test.sh, 'crms conf git@github.com:IdToBeReplaced/...' to your github account 
+* (5.1) Modify the line in test.sh, 'crms conf git@github.com:IdToBeReplaced/...' to your github account 
 ```sh
 sed -i 's/IdToBeReplaced/<your_github_account>/g' test.sh
 ```
-* Add a repository to github (ex. model_test)
+* (5.2) Add a repository to github (ex. model_test)
     * Login github.com -> [New] Button -> Create a New Repository -> Enter a repository name(ex. model_test) -> [Create repository] Button
 
-* Execute test.sh with the name of the added github repository 
+* (5.3) Execute test.sh with the name of the added github repository 
 ```sh
 /test.sh model_test
 ```
