@@ -14,7 +14,30 @@ git config --global user.name “Your Name”
 git config --global user.email your-email@xxx.com
 ```
 
-## (1) Download crms from github and install with pip3
+## (1) Install gcloud sdk
+* (1.1) Download https://cloud.google.com/sdk/docs/install (Linux 64-bit package)
+* (1.2) Extract the downloaded package to ~/google-cloud-sdk
+```sh
+tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
+```
+* (1.3) Add path to .bashrc 
+```sh
+./google-cloud-sdk/install.sh
+```
+* (1.4) Setup Google Credential 
+    * Download Google Credential file (contact administrator of your Google Cloud Project)
+        * Access permission of credential may be one of reading or writing (writing permission is necessary for a full test)
+        * In case of reading permission, crms push command is not allowed (crms list/desc/pull commands are allowed) 
+    * Set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
+```sh
+export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
+```
+* (1.5) bug fix of protobuf
+```sh
+pip3 install protobuf==3.20.1
+```
+
+## (2) Download crms from github and install with pip3
 ```sh
 git clone https://github.com/jangcs/crms.git
 cd crms
@@ -26,45 +49,21 @@ source ~/.bashrc
 -->
 
 
-<!--
-## (2) Install DVC
+## (3) Install DVC for Google Cloud Storage
 ```sh
-pip3 install dvc
 pip3 install dvc[gs]
 [reboot if necessary]
 ```
--->
 
-## (3) Install gcloud sdk
-* (3.1) Download https://cloud.google.com/sdk/docs/install (Linux 64-bit package)
-* (3.2) Extract the downloaded package to ~/google-cloud-sdk
-```sh
-tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
-```
-* (3.3) Add path to .bashrc 
-```sh
-./google-cloud-sdk/install.sh
-```
-* (3.4) Setup Google Credential 
-    * Download Google Credential file (contact administrator of your Google Cloud Project)
-        * Access permission of credential may be one of reading or writing (writing permission is necessary for a full test)
-        * In case of reading permission, crms push command is not allowed (crms list/desc/pull commands are allowed) 
-    * Set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
-```sh
-export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
-```
-* (3.5) bug fix of protobuf
-```sh
-pip3 install protobuf==3.20.1
-```
-
+<!--
 ## (4) Install required libraries
 ```sh
 pip3 install GitPython
 pip3 install firebase_admin
 ```
+-->
 
-## (5) Test crms cli
+## (4) Test crms cli
 * SSH key has to be generated for secure connection with github.com    
 ```
 ssh-keygen
