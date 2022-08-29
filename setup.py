@@ -10,8 +10,10 @@ install_requires = [
 
 setup(
     name='crms',
-    version='1.0',
+    version='0.7',
     description='Cloud Robot Model Sharing Middleware',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     author='jangcs',
     author_email='jangcs@etri.re.kr',
     packages=find_packages(where='src'),
@@ -24,5 +26,6 @@ setup(
 )
 ### [출처] python package 만들어서 사용하기 (1)|작성자 키리
 ### https://blog.naver.com/lccandol/222651163325
-
+### [출처] python package 만들어서 사용하기 (2) - CLI|작성자 키리
+### https://blog.naver.com/lccandol/222734235499
 
