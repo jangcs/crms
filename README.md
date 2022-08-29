@@ -62,8 +62,7 @@ pip3 install GitPython
 pip3 install firebase_admin
 ```
 -->
-
-## (4) Test crms cli
+## (4) Prepare ssh key for github
 * SSH key has to be generated for secure connection with github.com    
 ```
 ssh-keygen
@@ -72,15 +71,20 @@ ssh-keyscan github.com > ~/.ssh/known_hosts
 * And, the generated SSH key has to be registered to github.com in order to push a model     
     * Login github.com -> Settings/SSH and GPG keys -> [New SSH Key] Button -> Copy the contents of ~/.ssh/id_rsa.pub to Key box -> [Add SSH Key] Button
 
+
+## (5) Test crms cli
 * (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
 ```sh
 export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
-* Add a repository to github (ex. model_test)
+
 * Modify the line in test.sh, 'crms conf git@github.com:IdToBeReplaced/...' to your github account 
 ```sh
 sed -i 's/IdToBeReplaced/<your_github_account>/g' test.sh
 ```
+
+* Add a repository to github (ex. model_test)
+    * Login github.com -> [New] Button -> Create a New Repository -> Enter a repository name(ex. model_test) -> [Create repository] Button
 
 * Execute test.sh with the name of the added github repository 
 ```sh
