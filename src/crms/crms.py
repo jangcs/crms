@@ -24,7 +24,7 @@ def append_label_sample(f) :
     f.write('#  label_key2: lavel_value2\n')
     f.write('#  resolution: 640x480(sample)\n')
 
-def crms_conf_api(arg_git_remote, arg_dvc_remote) :
+def crms_conf(arg_git_remote, arg_dvc_remote) :
 
     dir_path = os.getcwd()
     #### CRMS Config Directory
@@ -65,10 +65,10 @@ def crms_conf_api(arg_git_remote, arg_dvc_remote) :
         
     print("CRMS Configurations are stored into .crms/config !!!")
     
-def crms_conf(args):
-    crms_conf_api(arg_git_remote = args.git_remote, arg_dvc_remote = args.dvc_remote)
+def crms_conf_cli(args):
+    crms_conf(arg_git_remote = args.git_remote, arg_dvc_remote = args.dvc_remote)
     
-def crms_conf_mod_api(arg_git_remote='', arg_dvc_remote=''):
+def crms_conf_mod(arg_git_remote='', arg_dvc_remote=''):
 
     dir_path = os.getcwd()
     #### CRMS Config Directory
@@ -105,7 +105,7 @@ def crms_conf_mod_api(arg_git_remote='', arg_dvc_remote=''):
     print("CRMS Configurations are modified !!!")
 
 
-def crms_conf_mod(args):
+def crms_conf_mod_cli(args):
     
     args_dict = vars(args)
     arg_git_remote = ''
@@ -118,7 +118,7 @@ def crms_conf_mod(args):
     if 'dvc_remote' in args_dict and args.dvc_remote != '' :
         arg_dvc_remote = args.dvc_remote
 
-    crms_conf_mod_api(arg_git_remote, arg_dvc_remote)
+    crms_conf_mod(arg_git_remote, arg_dvc_remote)
 
 def set_dvc_remote(dvc_remote):
     #### DVC Remote Add
@@ -154,7 +154,7 @@ def set_git_remote(git_remote):
     print("CRMS added Git remote (" + git_remote + ")")
 
 
-def crms_init_api(arg_model_name):
+def crms_init(arg_model_name):
 
     dir_path = os.getcwd()
     #### Checke CRMS Config File Existence
@@ -254,11 +254,11 @@ def crms_init_api(arg_model_name):
                         'device'       : configs['platform']['device'] 
                     }})
 
-def crms_init(args):
+def crms_init_cli(args):
     arg_model_name = args.model_name
-    crms_init_api(arg_model_name)
+    crms_init(arg_model_name)
 
-def crms_add_api(arg_model_files):
+def crms_add(arg_model_files):
     # List to be added to Git
     git_add_list = ['.dvcignore', '.dvc/config', '.gitignore', '.crms/config']  # + *.dvc
 
@@ -313,12 +313,12 @@ def crms_add_api(arg_model_files):
     repo.index.commit(commitMsg)
     print("CRMS added auxiliary files(" + ', '.join(s for s in git_add_list) + ") to GIT")
  
-def crms_add(args):
+def crms_add_cli(args):
     arg_model_files = args.model_files
-    crms_add_api(arg_model_files)
+    crms_add(arg_model_files)
 
 
-def crms_push_api(arg_version) :
+def crms_push(arg_version) :
 
     #### Check CRMS Config File Existence
     dir_path = os.getcwd()
@@ -412,11 +412,11 @@ def crms_push_api(arg_version) :
     print("CRMS PUSHED....")
     
 
-def crms_push(args):
+def crms_push_cli(args):
     arg_version = args.version
-    crms_push_api(arg_version)
+    crms_push(arg_version)
 
-def crms_pull_api(arg_model_url, arg_version, arg_target=''):
+def crms_pull(arg_model_url, arg_version, arg_target=''):
     print("CRMS PULL....")
     
     if arg_target != '' :
@@ -456,7 +456,7 @@ def crms_pull_api(arg_model_url, arg_version, arg_target=''):
         # repo.delete_head('crms_target')
 
 
-def crms_pull(args):
+def crms_pull_cli(args):
     
     if args.target != '' :
         arg_target = args.target
@@ -468,10 +468,10 @@ def crms_pull(args):
     arg_model_url = args.model_url
     arg_version = args.version
 
-    crms_pull_api(arg_model_url, arg_version, arg_target)
+    crms_pull(arg_model_url, arg_version, arg_target)
 
 
-def crms_desc_api(arg_model_name):
+def crms_desc(arg_model_name):
     print("CRMS DESC....")
     
     if CRMS_META_REPOSITORY != '' :
@@ -507,11 +507,11 @@ def crms_desc_api(arg_model_name):
         print("CRMS_META_REPOSITORY is not defined...")
 
 
-def crms_desc(args):
+def crms_desc_cli(args):
     arg_model_name = args.model_name
-    crms_desc_api(arg_model_name)
+    crms_desc(arg_model_name)
     
-def crms_list_api():
+def crms_list():
     print("CRMS LIST....")
     
     if CRMS_META_REPOSITORY != '' :
@@ -530,27 +530,27 @@ def crms_list_api():
         print("CRMS_META_REPOSITORY is not defined...")
    
 
-def crms_list(args):
-    crms_list_api()
+def crms_list_cli(args):
+    crms_list()
    
 
 def crms(args):
     if args.cmd == 'conf':
-        crms_conf(args)
+        crms_conf_cli(args)
     elif args.cmd == 'conf_mod' :
-        crms_conf_mod(args)
+        crms_conf_mod_cli(args)
     elif args.cmd == 'init' :
-        crms_init(args)
+        crms_init_cli(args)
     elif args.cmd == 'add' :
-        crms_add(args)
+        crms_add_cli(args)
     elif args.cmd == 'push' :
-        crms_push(args)
+        crms_push_cli(args)
     elif args.cmd == 'pull' :
-        crms_pull(args)
+        crms_pull_cli(args)
     elif args.cmd == 'list' :
-        crms_list(args)
+        crms_list_cli(args)
     elif args.cmd == 'desc' :
-        crms_desc(args)
+        crms_desc_cli(args)
     else :
         print("Unknown CMD")
 
