@@ -22,15 +22,15 @@ git clone https://github.com/jangcs/crms.git
 cd crms
 pip3 install .
 ```
-/// echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
-/// source ~/.bashrc
+// echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
+// source ~/.bashrc
 
-///## (2) Install DVC
-///```sh
-///pip3 install dvc
-///pip3 install dvc[gs]
-///[reboot if necessary]
-///```
+//## (2) Install DVC
+//```sh
+//pip3 install dvc
+//pip3 install dvc[gs]
+//[reboot if necessary]
+//```
 
 ## (3) Install gcloud sdk
 * (3.1) Download https://cloud.google.com/sdk/docs/install (Linux 64-bit package)
