@@ -24,14 +24,15 @@ def append_label_sample(f) :
     f.write('#  label_key2: lavel_value2\n')
     f.write('#  resolution: 640x480(sample)\n')
 
-def crms_conf(arg_git_remote, arg_dvc_remote) :
+def crms_conf(arg_git_remote, arg_dvc_remote, verbose=False) :
 
     dir_path = os.getcwd()
     #### CRMS Config Directory
     path_crms = os.path.join(dir_path, ".crms")
     if not os.path.exists(path_crms) :
         os.makedirs(path_crms)
-        print("The new .crms directory is created !!!")
+        if verbose :
+            print("The new .crms directory is created !!!")
 
     git_remote = arg_git_remote
     git_remote_split = git_remote.split(':')
@@ -62,20 +63,26 @@ def crms_conf(arg_git_remote, arg_dvc_remote) :
     with open(path_config, 'w') as f:
         yaml.dump(configs, f, sort_keys=False)
         append_label_sample(f)
-        
-    print("CRMS Configurations are stored into .crms/config !!!")
-    
+
+    with open(path_config, 'r') as f:
+        config_dict = yaml.load(f,  Loader=yaml.FullLoader)
+
+    return config_dict
+            
 def crms_conf_cli(args):
-    crms_conf(arg_git_remote = args.git_remote, arg_dvc_remote = args.dvc_remote)
-    
-def crms_conf_mod(arg_git_remote='', arg_dvc_remote=''):
+    print("CRMS CONF....")
+    crms_conf(arg_git_remote = args.git_remote, arg_dvc_remote = args.dvc_remote,verbose=True)
+    print("CRMS CONF Completed !!! Configurations are stored into .crms/config !!!")
+
+def crms_conf_mod(arg_git_remote='', arg_dvc_remote='', verbose=False):
 
     dir_path = os.getcwd()
     #### CRMS Config Directory
     path_config = os.path.join(dir_path, ".crms", "config")
     if not os.path.exists(path_config) :
-        print("CRMS ERROR: crms conf must be called before crms conf_mod")
-        sys.exit(-1)
+        if verbose :
+            print("CRMS ERROR: crms conf must be called before crms conf_mod")
+        raise Exception("CRMS ERROR: crms conf must be called before crms conf_mod")
 
     #### Read CRMS Config File
     with open(path_config) as f:
@@ -84,17 +91,16 @@ def crms_conf_mod(arg_git_remote='', arg_dvc_remote=''):
     if arg_git_remote != None and arg_git_remote != '' :
         configs['git']['remote'] = arg_git_remote
         if 'model' in configs :         # if crms init was called --> model exists
-            set_git_remote(arg_git_remote.replace(':','-'))
-        else :
-            print("git_remote: model is not in config")
+            set_git_remote(arg_git_remote.replace(':','-'), verbose=verbose)
+        # else :
+        #     print("git_remote: model is not in config")
 
     if arg_dvc_remote != None and arg_dvc_remote != '' :
         configs['dvc']['remote'] = arg_dvc_remote
         if 'model' in configs :          # if crms init was called --> model exists   
-            set_dvc_remote(arg_dvc_remote.replace(':','-'))
-        else :
-            print("dvc_remote: model is not in config")
-
+            set_dvc_remote(arg_dvc_remote.replace(':','-'), verbose=verbose)
+        # else :
+        #     print("dvc_remote: model is not in config")
 
     with open(path_config, 'w') as f:
         yaml.dump(configs, f, sort_keys=False)
@@ -102,10 +108,14 @@ def crms_conf_mod(arg_git_remote='', arg_dvc_remote=''):
         if 'labels' not in configs :
             append_label_sample(f)
 
-    print("CRMS Configurations are modified !!!")
+    with open(path_config, 'r') as f:
+        config_dict = yaml.load(f,  Loader=yaml.FullLoader)
+
+    return config_dict
 
 
 def crms_conf_mod_cli(args):
+    print("CRMS CONF_MOD....")
     
     args_dict = vars(args)
     arg_git_remote = ''
@@ -118,55 +128,67 @@ def crms_conf_mod_cli(args):
     if 'dvc_remote' in args_dict and args.dvc_remote != '' :
         arg_dvc_remote = args.dvc_remote
 
-    crms_conf_mod(arg_git_remote, arg_dvc_remote)
+    crms_conf_mod(arg_git_remote, arg_dvc_remote, verbose=True)
 
-def set_dvc_remote(dvc_remote):
+    print("CRMS CONF_MOD Completed !!!")
+
+def set_dvc_remote(dvc_remote, verbose=False):
     #### DVC Remote Add
     p = subprocess.run(["dvc", "remote", "remove",  "storage", "--quiet" ])
     p = subprocess.run(["dvc", "remote", "add",  "-d", "storage", dvc_remote, "--quiet" ])
     # print("Return code : {} = {}".format(type(p.returncode), p.returncode))
-    if p.returncode == 0 : # success of subprocess.run
-        print("CRMS added DVC remote (" + dvc_remote + ")")
-    else: # fail of subprocess.run
-        print("CRMS failed to DVC add remote...")
-        sys.exit(-1)
 
-def set_git_remote(git_remote):
+    if p.returncode == 0 : # success of subprocess.run
+        if verbose:
+            print("CRMS added DVC remote (" + dvc_remote + ")")
+    else: # fail of subprocess.run
+        if verbose:
+            print("CRMS failed to DVC add remote...")
+        raise Exception("CRMS failed to DVC add remote...")
+
+
+def set_git_remote(git_remote, verbose=False):
     dir_path = os.getcwd()
     try :
         repo = Repo(dir_path)
     except git.exc.InvalidGitRepositoryError:
         repo = Repo.init(dir_path)        
-        print("CRMS uses Git Local Repository (" + dir_path + ")")        
-        print("Git initialized...")
+        if verbose:
+            print("CRMS uses Git Local Repository (" + dir_path + ")")        
+            print("Git initialized...")
     except git.exc.NoSuchPathError :
-        print("Error: git repoistory path could not be accessed by the system.")
-        sys.exit(-1)
+        if verbose:
+            print("Error: git repoistory path could not be accessed by the system.")
+        raise  # 현재 예외를 다시 발생시키기
     except :
-        print("Error: Unknown error occured while crms init")
-        sys.exit(-1)
+        if verbose:
+            print("Error: Unknown error occured while crms init")
+        raise  # 현재 예외를 다시 발생시키기
 
     #### git remote add origin ~~~~   # 'git remote add origin ~~ '  must be prepared before 'crms init'
     if len(repo.remotes) > 0 :
         repo.delete_remote('origin')
 
     origin = repo.create_remote('origin', git_remote)
-    print("CRMS added Git remote (" + git_remote + ")")
+    if verbose:
+        print("CRMS added Git remote (" + git_remote + ")")
 
 
-def crms_init(arg_model_name):
+def crms_init(arg_model_name, verbose=False):
 
     dir_path = os.getcwd()
     #### Checke CRMS Config File Existence
     path_config = os.path.join(dir_path, ".crms", "config")
     if not os.path.exists(path_config) :
-        print("CRMS ERROR: crms conf must be called before crms init")
-        sys.exit(-1)
+        if verbose:
+            print("CRMS ERROR: crms conf must be called before crms init")
+        raise Exception("CRMS ERROR: crms conf must be called before crms init")
 
     #### Add model_name to crms config file 
     with open(path_config) as f:
         configs = yaml.load(f, Loader=yaml.FullLoader)
-        print(configs)
+        if verbose:
+            print(configs)
 
     model_name = arg_model_name
     model_name_split = model_name.split(':')
@@ -177,8 +199,9 @@ def crms_init(arg_model_name):
             del(model_name_split[-1])
             model_name = model_name_split[0]
         else :
-            print("CRMS ERROR: model must be a form of <model-name> or <model-name>:<model-tag>")
-            sys.exit(-1)
+            if verbose:
+                print("CRMS ERROR: model must be a form of <model-name> or <model-name>:<model-tag>")
+            raise Exception("CRMS ERROR: model must be a form of <model-name> or <model-name>:<model-tag>")
 
     configs['model'] = {'name': model_name, 'tag':last_tag}
     with open(path_config, 'w') as f:
@@ -188,7 +211,10 @@ def crms_init(arg_model_name):
 
     
     #### Git Repository 
-    set_git_remote(configs['git']['remote'])
+    try :
+        set_git_remote(configs['git']['remote'], verbose=verbose)
+    except:
+        raise   # 현재 예외를 다시 발생시키기        
 
     # try :
     #     repo = Repo(dir_path)  # 'git init '  must be prepared before 'crms init'
@@ -215,13 +241,18 @@ def crms_init(arg_model_name):
     p = subprocess.run(["dvc", "init", "--force", "--quiet"])
     # print("Return code : {} = {}".format(type(p.returncode), p.returncode))
     if p.returncode == 0 : # success of subprocess.run
-        print("CRMS initialized DVC...")
+        if verbose :
+            print("CRMS initialized DVC...")
     else: # fail of subprocess.run
-        print("CRMS failed of DVC initialization...")
-        sys.exit(-1)
+        if verbose :
+            print("CRMS failed of DVC initialization...")
+        raise Exception("CRMS failed of DVC initialization...")
+
+    # if p.returncode != 0 : # failure of subprocess.run
+    #     raise Exception("CRMS failed of DVC initialization...")
 
     #### DVC Remote Add
-    set_dvc_remote(configs['dvc']['remote'])
+    set_dvc_remote(configs['dvc']['remote'], verbose=verbose)
 
 #     remotes = repo.remotes # [<git.Remote "origin">, ...]
 #     if len(remotes) <= 0 :
@@ -254,55 +285,70 @@ def crms_init(arg_model_name):
                         'device'       : configs['platform']['device'] 
                     }})
 
-def crms_init_cli(args):
-    arg_model_name = args.model_name
-    crms_init(arg_model_name)
+    return configs
 
-def crms_add(arg_model_files):
+def crms_init_cli(args):
+    print("CRMS INIT....")
+    arg_model_name = args.model_name
+    crms_init(arg_model_name, verbose=True)
+    print("CRMS INIT Completed !!!")
+
+def crms_add(arg_model_files, verbose=False):
     # List to be added to Git
     git_add_list = ['.dvcignore', '.dvc/config', '.gitignore', '.crms/config']  # + *.dvc
 
     # Check model files to be added
     model_files = arg_model_files
     if len(model_files) == 0 :
-        print("Error: File list is required to be added.")
+        if verbose :
+            print("Error: File list is required to be added.")
+        raise Exception("Error: File list is required to be added.")
 
     #### Check CRMS Config File Existence
     dir_path = os.getcwd()
     path_config = os.path.join(dir_path, ".crms", "config")
     if not os.path.exists(path_config) :
-        print("CRMS ERROR: crms conf must be called before crms init")
-        sys.exit(-1)
+        if verbose :
+            print("CRMS ERROR: crms conf must be called before crms init")
+        raise Exception("CRMS ERROR: crms conf must be called before crms init")
 
     #### Add model_name to crms config file 
     with open(path_config) as f:
         configs = yaml.load(f, Loader=yaml.FullLoader)
 
     if 'model' not in configs :          # if crms init was called --> model exists   
-        print("Error: crms init must be called before crms add")
+        if verbose :
+            print("Error: crms init must be called before crms add")
+        raise Exception("Error: crms init must be called before crms add")
 
     # open git repo
     dir_path = os.getcwd()
     try :
         repo = Repo(dir_path)  # 'git init'  must be prepared before 'crms init'
     except git.exc.InvalidGitRepositoryError:
-        print("Error: Invalid Git Repository. Check crms init was called...")
-        sys.exit(-1)
+        if verbose :
+            print("Error: Invalid Git Repository. Check crms init was called...")
+        raise # 현재 예외를 다시 발생시키기   
     except git.exc.NoSuchPathError :
-        print("Error: git repoistory path could not be access by the system.")
-        sys.exit(-1)
+        if verbose :
+            print("Error: git repoistory path could not be access by the system.")
+        raise # 현재 예외를 다시 발생시키기   
     except :
-        print("Error: Unknown error occured while crms push")
-        sys.exit(-1)
+        if verbose :
+            print("Error: Unknown error occured while crms push")
+        raise # 현재 예외를 다시 발생시키기   
 
     # dvc add
     p = subprocess.run(["dvc", "add"]  + model_files)
     # print("Return code : {} = {}".format(type(p.returncode), p.returncode))
+ 
     if p.returncode == 0 : # success of subprocess.run
-        print("CRMS added model files(" + ', '.join(s for s in model_files) + ") to DVC")
+        if verbose :
+            print("CRMS added model files(" + ', '.join(s for s in model_files) + ") to DVC")
     else: # fail of subprocess.run
-        print("CRMS failed to add model files...")
-        sys.exit(-1)
+        if verbose :
+            print("CRMS failed to add model files...")
+        raise Exception("CRMS failed to add model files...")
 
     # add git_add_list files to git repo index
     for file_name in model_files :
@@ -311,63 +357,77 @@ def crms_add(arg_model_files):
     repo.index.add(git_add_list)
     commitMsg="CRMS model files(" + ', '.join(s for s in model_files) + ") for model(" + configs['model']['name'] + ") are added."
     repo.index.commit(commitMsg)
-    print("CRMS added auxiliary files(" + ', '.join(s for s in git_add_list) + ") to GIT")
+    if verbose :
+        print("CRMS added auxiliary files(" + ', '.join(s for s in git_add_list) + ") to GIT")
+
  
 def crms_add_cli(args):
+    print("CRMS ADD....")
     arg_model_files = args.model_files
-    crms_add(arg_model_files)
+    crms_add(arg_model_files, verbose=True)
+    print("CRMS ADD Completed !!!")
 
 
-def crms_push(arg_version) :
+def crms_push(arg_version, verbose=False) :
 
     #### Check CRMS Config File Existence
     dir_path = os.getcwd()
     path_config = os.path.join(dir_path, ".crms", "config")
     if not os.path.exists(path_config) :
-        print("CRMS ERROR: crms conf was not called")
-        sys.exit(-1)
+        if verbose :
+            print("CRMS ERROR: crms conf was not called")
+        raise Exception("CRMS ERROR: crms conf was not called")
 
     #### Add model_name to crms config file 
     with open(path_config) as f:
         configs = yaml.load(f, Loader=yaml.FullLoader)
 
     if 'model' not in configs :          # if crms init was called --> model exists   
-        print("Error: crms init was not called")
+        if verbose :
+            print("Error: crms init was not called")
+        raise Exception("Error: crms init was not called")
 
     # open git repo
     dir_path = os.getcwd()
     try :
         repo = Repo(dir_path)  # 'git init'  must be prepared before 'crms init'
     except git.exc.InvalidGitRepositoryError:
-        print("Error: Invalid Git Repository. Check crms init was called...")
-        sys.exit(-1)
+        if verbose :
+            print("Error: Invalid Git Repository. Check crms init was called...")
+        raise # 현재 예외를 다시 발생시키기   
     except git.exc.NoSuchPathError :
-        print("Error: git repoistory path could not be access by the system.")
-        sys.exit(-1)
+        if verbose :
+            print("Error: git repoistory path could not be access by the system.")
+        raise # 현재 예외를 다시 발생시키기   
     except :
-        print("Error: Unknown error occured while crms push")
-        sys.exit(-1)
+        if verbose :
+            print("Error: Unknown error occured while crms push")
+        raise # 현재 예외를 다시 발생시키기   
 
     remotes = repo.remotes # [<git.Remote "origin">, ...]
     if len(remotes) <= 0 :
-        print("Error: git remote origin must be added before crms push.")
-        print("Try: git remote add origin git@github.com:<user_name>/<repository_name.git>")    
-        sys.exit(-1)
-
+        if verbose :
+            print("Error: git remote origin must be added before crms push.")
+            print("Try: git remote add origin git@github.com:<user_name>/<repository_name.git>")    
+        raise Exception("Error: git remote origin must be added before crms push.")
 
     tagName = arg_version
-    print("Creating TagReference.")
+    if verbose :
+        print("Creating TagReference.")
     git.refs.tag.TagReference.create(repo, tagName)
 
     #origin = repo.remotes.origin
     remote_origin = repo.remotes[0]   # repo.remotes.origin (=origin)
-    print("Push to main of remote " + remote_origin.name)
+    if verbose :
+        print("Push to main of remote " + remote_origin.name)
 
     #origin.push('main')
-    print("repo.active_branch.name = " + repo.active_branch.name)
+    if verbose :
+        print("repo.active_branch.name = " + repo.active_branch.name)
     remote_origin.push(repo.active_branch.name)   # main
 
-    print("Push tag : " + tagName)
+    if verbose :
+        print("Push tag : " + tagName)
     remote_origin.push(tagName)
 
 
@@ -384,12 +444,14 @@ def crms_push(arg_version) :
     #### DVC Push
     p = subprocess.run(["dvc", "push"])
     # print("Return code : {} = {}".format(type(p.returncode), p.returncode))
-    if p.returncode == 0 : # success of subprocess.run
-        print("CRMS pushes to DVC...")
-    else: # fail of subprocess.run
-        print("CRMS failed of DVC Push...")
-        sys.exit(-1)
 
+    if p.returncode == 0 : # success of subprocess.run
+        if verbose :
+            print("CRMS pushes to DVC...")
+    else: # fail of subprocess.run
+        if verbose :
+            print("CRMS failed of DVC Push...")
+        raise Exception("CRMS failed of DVC Push...")
 
     if CRMS_META_REPOSITORY != '' :
         global crms_firebase_app
@@ -408,16 +470,13 @@ def crms_push(arg_version) :
             doc_ref = db.collection('models').document(configs['model']['name'])   # DocumentReference
         doc_ref.update({'latest':tagName, 'versions':firestore.ArrayUnion([tagName])})
 
-
-    print("CRMS PUSHED....")
-    
-
 def crms_push_cli(args):
+    print("CRMS PUSH....")
     arg_version = args.version
-    crms_push(arg_version)
+    crms_push(arg_version, verbose=True)
+    print("CRMS PUSH Completed !!!")
 
-def crms_pull(arg_model_url, arg_version, arg_target=''):
-    print("CRMS PULL....")
+def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
     
     if arg_target != '' :
         target = arg_target
@@ -429,17 +488,20 @@ def crms_pull(arg_model_url, arg_version, arg_target=''):
     # repo = Repo.clone_from("git@github.com:jangcs/KKK.git", os.getcwd() )
     modified_model_url = arg_model_url.replace('git@github.com:','https://github.com/',1)
 
-    print("crms_pull from "+ modified_model_url)
+    if verbose :
+        print("crms_pull from "+ modified_model_url)
     repo = Repo.clone_from(modified_model_url, target )
 
     if arg_version == 'latest' : 
         os.chdir(target)
         p = subprocess.run(["dvc", "pull"])
         if p.returncode == 0 : # success of subprocess.run
-            print("CRMS pulled model files from DVC to " + target)
+            if verbose :
+                print("CRMS pulled model files from DVC to " + target)
         else: # fail of subprocess.run
-            print("CRMS failed to pull model files...")
-            sys.exit(-1)
+            if verbose :
+                print("CRMS failed to pull model files...")
+            raise Exception("CRMS failed to pull model files...")
     else :
         past_branch = repo.create_head('crms_target', arg_version)
         repo.heads.crms_target.checkout()
@@ -447,16 +509,19 @@ def crms_pull(arg_model_url, arg_version, arg_target=''):
         os.chdir(target)
         p = subprocess.run(["dvc", "pull"])
         if p.returncode == 0 : # success of subprocess.run
-            print("CRMS pulled model files from DVC to " + target)
+            if verbose :
+                print("CRMS pulled model files from DVC to " + target)
         else: # fail of subprocess.run
-            print("CRMS failed to pull model files...")
-            sys.exit(-1)
+            if verbose :
+                print("CRMS failed to pull model files...")
+            raise Exception("CRMS failed to pull model files...")
 
         # repo.heads.master.checkout()
         # repo.delete_head('crms_target')
 
 
 def crms_pull_cli(args):
+    print("CRMS PULL....")
     
     if args.target != '' :
         arg_target = args.target
@@ -468,11 +533,10 @@ def crms_pull_cli(args):
     arg_model_url = args.model_url
     arg_version = args.version
 
-    crms_pull(arg_model_url, arg_version, arg_target)
+    crms_pull(arg_model_url, arg_version, arg_target, verbose=True)
+    print("CRMS PULL Completed !!!")
 
-
-def crms_desc(arg_model_name):
-    print("CRMS DESC....")
+def crms_desc(arg_model_name, verbose=False):
     
     if CRMS_META_REPOSITORY != '' :
         global crms_firebase_app
@@ -488,32 +552,56 @@ def crms_desc(arg_model_name):
         else :
             docs = db.collection('models').where('name', '==', arg_model_name).stream()   # DocumentReference
 
-        for doc in docs:
-            print(doc.id)
-
+        doc_dicts = []
+        for doc in docs: 
             d = doc.to_dict()
+            d['id']=doc.id
+            if verbose:
+                print("Get description of " + d["id"] )
 
-            print('\tRepository: '+d['git_repository'])
+            doc_dicts.append(d)
+
+        return doc_dicts
+
+        # for doc in docs: 
+        #     print(doc.id)
+
+        #     d = doc.to_dict()
+
+        #     print('\tRepository: '+d['git_repository'])
 
 
-            print('\tVersions')
-            versions = d['versions']
-            for v in versions :
-                print('\t\t' + v)
+        #     print('\tVersions')
+        #     versions = d['versions']
+        #     for v in versions :
+        #         print('\t\t' + v)
 
-            latest = d['latest']
-            print('\tLatest = ' + latest)
+        #     latest = d['latest']
+        #     print('\tLatest = ' + latest)
     else :
-        print("CRMS_META_REPOSITORY is not defined...")
+        if verbose:
+            print("CRMS_META_REPOSITORY is not defined...")
+        raise Exception("CRMS_META_REPOSITORY is not defined...")
 
 
 def crms_desc_cli(args):
+    print("CRMS DESC....")
     arg_model_name = args.model_name
-    crms_desc(arg_model_name)
+    doc_dicts = crms_desc(arg_model_name, verbose=True)
+    for doc in doc_dicts: 
+        print(doc["id"])
+        print('\tRepository: '+doc['git_repository'])
+        print('\tVersions')
+        versions = doc['versions']
+        for v in versions :
+            print('\t\t' + v)
+
+        latest = doc['latest']
+        print('\tLatest = ' + latest)
+    print("CRMS DESC Completed !!!")
+
     
-def crms_list():
-    print("CRMS LIST....")
-    
+def crms_list(verbose=False):
     if CRMS_META_REPOSITORY != '' :
         global crms_firebase_app
         if crms_firebase_app == None :
@@ -524,15 +612,25 @@ def crms_list():
 
         docs = db.collection('models').list_documents()
         
+        doc_ids = []
         for doc in docs:
-            print(doc.id)
+            doc_ids.append(doc.id)
+        
+        return doc_ids
     else :
-        print("CRMS_META_REPOSITORY is not defined...")
+        if verpose :
+            print("CRMS_META_REPOSITORY is not defined...")
+        raise Exception("CRMS_META_REPOSITORY is not defined...")
    
 
 def crms_list_cli(args):
-    crms_list()
-   
+    print("CRMS LIST....")
+    doc_ids = crms_list(verbose=True)
+
+    for doc_id in doc_ids:
+        print(doc_id)
+    print("CRMS LIST Completed !!!")
+
 
 def crms(args):
     if args.cmd == 'conf':
