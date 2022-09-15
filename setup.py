@@ -26,8 +26,4 @@ setup(
     entry_points = { 'console_scripts': ['crms=crms.crms:main'],
     },
 )
-### [출처] python package 만들어서 사용하기 (1)|작성자 키리
-### https://blog.naver.com/lccandol/222651163325
-### [출처] python package 만들어서 사용하기 (2) - CLI|작성자 키리
-### https://blog.naver.com/lccandol/222734235499
 
