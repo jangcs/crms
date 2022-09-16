@@ -523,26 +523,26 @@ def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
                     print_verbose(verbose,"CRMS Error: crms pull failed because git repo has not a remote.")
                     raise Exception("CRMS Error: crms pull failed because git repo has not a remote.")
 
-                print_verbose(verbose,"--List heads")
+                print_verbose(verbose,"--CRMS lists heads")
                 for h in repo.heads :
                     print_verbose(verbose,h)
 
-                print_verbose(verbose,"-- Checkout to master")
+                print_verbose(verbose,"-- CRMS checkouts to master")
                 repo.heads.master.checkout()
 
-                print_verbose(verbose,"-- Delete HEAD(crms_target)")
+                print_verbose(verbose,"-- CRMS deletes HEAD(crms_target)")
                 try :
                     repo.delete_head('crms_target')
                 except :
                     print_verbose(verbose,"\tHEAD crms_target does not exist.")
 
-                print_verbose(verbose,"-- Git pull latest") # pull latest
+                print_verbose(verbose,"-- CRMS git pulls the latest") # pull latest
                 remote_origin = repo.remotes[0]   # repo.remotes.origin (=origin)
                 remote_origin.pull()
 
                 print_verbose(verbose, "\tGit Pull lastest completed.")
 
-                print_verbose(verbose,"-- Create new HEAD(crms_target)") # pull latest
+                print_verbose(verbose,"-- CRMS creates a new HEAD(crms_target)") # pull latest
 
                 if arg_version != 'latest' :
                     past_branch = repo.create_head('crms_target', arg_version)
@@ -561,7 +561,7 @@ def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
                 return
             else :
                 print_verbose(verbose, "CRMS ERROR: " + target + " already exists, but it was not cloned from " + arg_model_url + ".")
-                raise Exception("CRMS ERROR: " + target + " already exists, but it is not cloned from " + arg_model_url + ".")
+                raise Exception("CRMS ERROR: " + target + " already exists, but it was not cloned from " + arg_model_url + ".")
                 
         raise Exception(target + " already exists.")
     # New direcotry
