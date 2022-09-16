@@ -476,8 +476,16 @@ def crms_push_cli(args):
     crms_push(arg_version, verbose=True)
     print("CRMS PUSH Completed !!!")
 
+
+def print_verbose(verbose, msg):
+    if verbose :
+        print(msg)    
+
 def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
     
+    # repo = Repo.clone_from("git@github.com:jangcs/KKK.git", os.getcwd() )
+    modified_model_url = arg_model_url.replace('git@github.com:','https://github.com/',1)
+
     if arg_target != '' :
         target = arg_target
     else :
@@ -485,39 +493,109 @@ def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
         # target = os.path.join( os.getcwd(), "model_crms")
         target = os.path.join( os.getcwd(), os.path.basename(arg_model_url).split('.')[0] )   # git@github.com:jangcs/KKK.git -> KKK.git -> ['KKK', 'git']
         
-    # repo = Repo.clone_from("git@github.com:jangcs/KKK.git", os.getcwd() )
-    modified_model_url = arg_model_url.replace('git@github.com:','https://github.com/',1)
+    # Existing directory
+    if os.path.isdir(target) :
+        print_verbose(verbose, target + " already exists.")
+        
+        #### CRMS Config Directory
+        path_config = os.path.join(target, ".crms", "config")
+        if not os.path.exists(path_config) :
+            print_verbose(verbose, "CRMS ERROR: " + target + " already exists, but it is not a crms model directory.")
+            raise Exception("CRMS ERROR: " + target + " already exists, but it is not a crms model directory.")
 
-    if verbose :
-        print("crms_pull from "+ modified_model_url)
-    repo = Repo.clone_from(modified_model_url, target )
+        #### Read CRMS Config File
+        with open(path_config) as f:
+            configs = yaml.load(f, Loader=yaml.FullLoader)
+            config_git_remote = configs['git']['remote'] 
+            modified_config_git_remote = config_git_remote.replace('git@github.com:','https://github.com/',1)
 
-    if arg_version == 'latest' : 
-        os.chdir(target)
-        p = subprocess.run(["dvc", "pull"])
-        if p.returncode == 0 : # success of subprocess.run
-            if verbose :
-                print("CRMS pulled model files from DVC to " + target)
-        else: # fail of subprocess.run
-            if verbose :
-                print("CRMS failed to pull model files...")
-            raise Exception("CRMS failed to pull model files...")
-    else :
-        past_branch = repo.create_head('crms_target', arg_version)
-        repo.heads.crms_target.checkout()
+            if modified_config_git_remote == modified_model_url :
+                print_verbose(verbose, "The target directory and crms configuration are checked correctly.")
 
-        os.chdir(target)
-        p = subprocess.run(["dvc", "pull"])
-        if p.returncode == 0 : # success of subprocess.run
-            if verbose :
-                print("CRMS pulled model files from DVC to " + target)
-        else: # fail of subprocess.run
-            if verbose :
-                print("CRMS failed to pull model files...")
-            raise Exception("CRMS failed to pull model files...")
+                ## git pull using a already existing repo
+                try :
+                    repo = Repo(target)
+                except :
+                    print_verbose(verbose,"CRMS Error: crms pull failed because of git repo problem.")
+                    raise  # 현재 예외를 다시 발생시키기
 
-        # repo.heads.master.checkout()
-        # repo.delete_head('crms_target')
+                if len(repo.remotes) <= 0 :
+                    print_verbose(verbose,"CRMS Error: crms pull failed because git repo has not a remote.")
+                    raise Exception("CRMS Error: crms pull failed because git repo has not a remote.")
+
+                print_verbose(verbose,"--List heads")
+                for h in repo.heads :
+                    print_verbose(verbose,h)
+
+                print_verbose(verbose,"-- Checkout to master")
+                repo.heads.master.checkout()
+
+                print_verbose(verbose,"-- Delete HEAD(crms_target)")
+                try :
+                    repo.delete_head('crms_target')
+                except :
+                    print_verbose(verbose,"\tHEAD crms_target does not exist.")
+
+                print_verbose(verbose,"-- Git pull latest") # pull latest
+                remote_origin = repo.remotes[0]   # repo.remotes.origin (=origin)
+                remote_origin.pull()
+
+                print_verbose(verbose, "\tGit Pull lastest completed.")
+
+                print_verbose(verbose,"-- Create new HEAD(crms_target)") # pull latest
+
+                if arg_version != 'latest' :
+                    past_branch = repo.create_head('crms_target', arg_version)
+                    repo.heads.crms_target.checkout()
+
+                os.chdir(target)
+                p = subprocess.run(["dvc", "pull"])
+                if p.returncode == 0 : # success of subprocess.run
+                    if verbose :
+                        print("CRMS pulled model files from DVC to " + target)
+                else: # fail of subprocess.run
+                    if verbose :
+                        print("CRMS failed to pull model files...")
+                    raise Exception("CRMS failed to pull model files...")
+
+                return
+            else :
+                print_verbose(verbose, "CRMS ERROR: " + target + " already exists, but it was not cloned from " + arg_model_url + ".")
+                raise Exception("CRMS ERROR: " + target + " already exists, but it is not cloned from " + arg_model_url + ".")
+                
+        raise Exception(target + " already exists.")
+    # New direcotry
+    else : 
+        if verbose :
+            print("crms_pull from "+ modified_model_url)
+        repo = Repo.clone_from(modified_model_url, target )
+
+        if arg_version == 'latest' : 
+            os.chdir(target)
+            p = subprocess.run(["dvc", "pull"])
+            if p.returncode == 0 : # success of subprocess.run
+                if verbose :
+                    print("CRMS pulled model files from DVC to " + target)
+            else: # fail of subprocess.run
+                if verbose :
+                    print("CRMS failed to pull model files...")
+                raise Exception("CRMS failed to pull model files...")
+        else :
+            past_branch = repo.create_head('crms_target', arg_version)
+            repo.heads.crms_target.checkout()
+
+            os.chdir(target)
+            p = subprocess.run(["dvc", "pull"])
+            if p.returncode == 0 : # success of subprocess.run
+                if verbose :
+                    print("CRMS pulled model files from DVC to " + target)
+            else: # fail of subprocess.run
+                if verbose :
+                    print("CRMS failed to pull model files...")
+                raise Exception("CRMS failed to pull model files...")
+
+            # repo.heads.master.checkout()
+            # repo.delete_head('crms_target')
 
 
 def crms_pull_cli(args):
