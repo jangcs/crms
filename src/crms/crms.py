@@ -73,9 +73,9 @@ def crms_conf(arg_git_remote, arg_dvc_remote, verbose=False) :
     return config_dict
             
 def crms_conf_cli(args):
-    print("CRMS CONF....")
-    crms_conf(arg_git_remote = args.git_remote, arg_dvc_remote = args.dvc_remote,verbose=True)
-    print("CRMS CONF Completed !!! Configurations are stored into .crms/config !!!")
+    print_verbose(args.verbose, "CRMS CONF....")
+    crms_conf(arg_git_remote = args.git_remote, arg_dvc_remote = args.dvc_remote,verbose=args.verbose)
+    print_verbose(args.verbose, "CRMS CONF Completed !!! Configurations are stored into .crms/config !!!")
 
 def crms_conf_mod(arg_git_remote='', arg_dvc_remote='', verbose=False):
 
@@ -117,7 +117,7 @@ def crms_conf_mod(arg_git_remote='', arg_dvc_remote='', verbose=False):
 
 
 def crms_conf_mod_cli(args):
-    print("CRMS CONF_MOD....")
+    print_verbose(args.verbose, "CRMS CONF_MOD....")
     
     args_dict = vars(args)
     arg_git_remote = ''
@@ -130,9 +130,9 @@ def crms_conf_mod_cli(args):
     if 'dvc_remote' in args_dict and args.dvc_remote != '' :
         arg_dvc_remote = args.dvc_remote
 
-    crms_conf_mod(arg_git_remote, arg_dvc_remote, verbose=True)
+    crms_conf_mod(arg_git_remote, arg_dvc_remote, verbose=args.verbose)
 
-    print("CRMS CONF_MOD Completed !!!")
+    print_verbose(args.verbose, "CRMS CONF_MOD Completed !!!")
 
 def set_dvc_remote(dvc_remote, verbose=False):
     #### DVC Remote Add
@@ -280,10 +280,10 @@ def crms_init(arg_model_name, verbose=False):
     return configs
 
 def crms_init_cli(args):
-    print("CRMS INIT....")
+    print_verbose(args.verbose, "CRMS INIT....")
     arg_model_name = args.model_name
-    crms_init(arg_model_name, verbose=True)
-    print("CRMS INIT Completed !!!")
+    crms_init(arg_model_name, verbose=args.verbose)
+    print_verbose(args.verbose, "CRMS INIT Completed !!!")
 
 def crms_add(arg_model_files, verbose=False):
     # List to be added to Git
@@ -345,10 +345,10 @@ def crms_add(arg_model_files, verbose=False):
 
  
 def crms_add_cli(args):
-    print("CRMS ADD....")
+    print_verbose(args.verbose, "CRMS ADD....")
     arg_model_files = args.model_files
-    crms_add(arg_model_files, verbose=True)
-    print("CRMS ADD Completed !!!")
+    crms_add(arg_model_files, verbose=args.verbose)
+    print_verbose(args.verbose, "CRMS ADD Completed !!!")
 
 
 def crms_push(arg_version, verbose=False) :
@@ -442,10 +442,10 @@ def crms_push(arg_version, verbose=False) :
         doc_ref.update({'latest':tagName, 'versions':firestore.ArrayUnion([tagName])})
 
 def crms_push_cli(args):
-    print("CRMS PUSH....")
+    print_verbose(args.verbose, "CRMS PUSH....")
     arg_version = args.version
-    crms_push(arg_version, verbose=True)
-    print("CRMS PUSH Completed !!!")
+    crms_push(arg_version, verbose=args.verbose)
+    print_verbose(args.verbose, "CRMS PUSH Completed !!!")
 
 
 def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
@@ -569,7 +569,7 @@ def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
 
 
 def crms_pull_cli(args):
-    print("CRMS PULL....")
+    print_verbose(args.verbose, "CRMS PULL....")
     
     if args.target != '' :
         arg_target = args.target
@@ -581,8 +581,8 @@ def crms_pull_cli(args):
     arg_model_url = args.model_url
     arg_version = args.version
 
-    crms_pull(arg_model_url, arg_version, arg_target, verbose=True)
-    print("CRMS PULL Completed !!!")
+    crms_pull(arg_model_url, arg_version, arg_target, verbose=args.verbose)
+    print_verbose(args.verbose, "CRMS PULL Completed !!!")
 
 
 
@@ -623,7 +623,7 @@ def crms_clone(arg_model_url, arg_target='', verbose=False):
 
 
 def crms_clone_cli(args):
-    print("CRMS CLONE....")
+    print_verbose(args.verbose, "CRMS CLONE....")
     
     if args.target != '' :
         arg_target = args.target
@@ -635,8 +635,8 @@ def crms_clone_cli(args):
     arg_model_url = args.model_url
     # arg_version = 'latest'
 
-    crms_clone(arg_model_url, arg_target, verbose=True)
-    print("CRMS CLONE Completed !!!")
+    crms_clone(arg_model_url, arg_target, verbose=args.verbose)
+    print_verbose(args.verbose, "CRMS CLONE Completed !!!")
 
 
 
@@ -687,9 +687,9 @@ def crms_desc(arg_model_name, verbose=False):
 
 
 def crms_desc_cli(args):
-    print("CRMS DESC....")
+    print_verbose(args.verbose, "CRMS DESC....")
     arg_model_name = args.model_name
-    doc_dicts = crms_desc(arg_model_name, verbose=True)
+    doc_dicts = crms_desc(arg_model_name, verbose=args.verbose)
     for doc in doc_dicts: 
         print(doc["id"])
         print('\tRepository: '+doc['git_repository'])
@@ -700,7 +700,7 @@ def crms_desc_cli(args):
 
         latest = doc['latest']
         print('\tLatest = ' + latest)
-    print("CRMS DESC Completed !!!")
+    print_verbose(args.verbose, "CRMS DESC Completed !!!")
 
     
 def crms_list(verbose=False):
@@ -725,13 +725,21 @@ def crms_list(verbose=False):
    
 
 def crms_list_cli(args):
-    print("CRMS LIST....")
-    doc_ids = crms_list(verbose=True)
+    print_verbose(args.verbose, "CRMS LIST....")
+    doc_ids = crms_list(verbose=args.verbose)
 
     for doc_id in doc_ids:
         print(doc_id)
-    print("CRMS LIST Completed !!!")
+    print_verbose(args.verbose, "CRMS LIST Completed !!!")
 
+CRMS_VERSION_STR = "0.21"
+
+def crms_ver(verbose=False):
+    print_verbose(verbose, "Print Version")
+    return CRMS_VERSION_STR
+
+def crms_ver_cli(args):
+    print(crms_ver(args.verbose))
 
 def crms(args):
     if args.cmd == 'conf':
@@ -752,6 +760,8 @@ def crms(args):
         crms_list_cli(args)
     elif args.cmd == 'desc' :
         crms_desc_cli(args)
+    elif args.cmd == 'version' :
+        crms_ver_cli(args)
     else :
         print("Unknown CMD")
 
@@ -770,35 +780,48 @@ def arg_parse() :
     parser_clone =  sub_parsers.add_parser('clone',  help="CRMS CLONE MODEL With Latest Version : crms clone <model_url> [--target=<target_dir>] ")
     parser_list =   sub_parsers.add_parser('list',  help="CRMS LIST Models : crms list")
     parser_desc =   sub_parsers.add_parser('desc',  help="CRMS DESCRIBE MODEL Versions : crms desc <model_name> ")
+    parser_ver  =   sub_parsers.add_parser('version',  help="CRMS Version Print : crms version")
 
     parser_conf.add_argument("git_remote", type=str,  action="store", help="git_remote_url is required")
     parser_conf.add_argument("dvc_remote", type=str,  action="store", help="dvc_remote_url is required")
+    parser_conf.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_conf_mod.add_argument("-g", "--git_remote", type=str,  default="", action="store", help="--git_remote=<git_remote_url>")
     parser_conf_mod.add_argument("-d", "--dvc_remote", type=str,  default="", action="store", help="--dvc_remote=<dvc_remote_url>")
+    parser_conf_mod.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_init.add_argument("model_name", type=str,  action="store", help="model_name is required")
+    parser_init.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_add.add_argument("model_files", type=str,  action="store", nargs="*", help="model_files are required")
+    parser_add.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_push.add_argument("version", type=str,  action="store", help="version is required")
+    parser_push.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_pull.add_argument("model_url",  action="store", help="model_url is required")
     # parser_pull.add_argument("model_name",  action="store", help="model_name is required")
     parser_pull.add_argument("-v", "--version", type=str,  default="latest", action="store", help="--version=<latest>|<version_tag>")
     parser_pull.add_argument("-t", "--target", type=str,  default="", action="store", help="--target=<target_dir>")
+    parser_pull.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_clone.add_argument("model_url",  action="store", help="model_url is required")
     parser_clone.add_argument("-t", "--target", type=str,  default="", action="store", help="--target=<target_dir>")
+    parser_clone.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
+
+    parser_list.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     parser_desc.add_argument("model_name",  action="store", help="model_nameis required")
+    parser_desc.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
+
+    parser_ver.add_argument("-V", "--verbose", action="store_true", help="verbose mode")
 
     args = arg_parser.parse_args()
     return args
 
 def main():
     args = arg_parse()
-    print(args)
+    # print(args)
     # print(dir(args))
     # print(type(args))
     crms(args)
