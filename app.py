@@ -106,6 +106,7 @@ class WatchDog(threading.Thread):
             time.sleep(int(os.getenv("WATCHDOG_PERIOD", 5)))
 
         del watchdogs[self.model_name]
+        print_verbose(True, "Watchdog for " + self.model_name + " stopped.")
 
     def stop(self):
         self.is_running = False
@@ -120,3 +121,4 @@ if __name__=='__main__':
     # watchdog.stop()
     for w in watchdogs.values() :
         w.stop()
+    time.sleep(int(os.getenv("WATCHDOG_PERIOD", 5)))
