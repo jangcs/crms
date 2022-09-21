@@ -33,17 +33,20 @@ host_port = 5000
 
 watchdogs = {}
 
+CRMS_MODEL_DIR="/models"
+
 @app.route('/')
 def hello():
-    return 'Hello Flask World'
+    models = os.listdir(CRMS_MODEL_DIR)
+    models.sort()
+    res = {'crms cached models': models}
+    return jsonify(res)
 
 @app.route('/watchdog', methods=['GET','POST'])
 def watchdog_method():
     if request.method == 'GET':
-        print("Receive a GET Request")
+        print("Receive a GET Request for Watchdog")
         model_name = request.args.get('model_name')
-        res = {'model':model_name}
-        print("Response " + str(res))
 
         if model_name in watchdogs :
             return 'Already monitoring ' + model_name
@@ -52,19 +55,61 @@ def watchdog_method():
         watchdogs[model_name] = watchdog_
         watchdog_.start()
 
+        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        print("Response " + str(res))
+
         return jsonify(res)
     if request.method == 'POST':
-        print("Receive a POST Request")
+        print("Receive a POST Request for Watchdog")
         model_name = request.json['model_name']
-        res = {'model':model_name}
-        return jsonify(res)
-    
 
-def append_label_sample(f) :
-    f.write('#labels : \n')
-    f.write('#  label_key1: lavel_value1\n')
-    f.write('#  label_key2: lavel_value2\n')
-    f.write('#  resolution: 640x480(sample)\n')
+        if model_name in watchdogs :
+            return 'Already monitoring ' + model_name
+
+        watchdog_ = WatchDog(model_name)
+        watchdogs[model_name] = watchdog_
+        watchdog_.start()
+
+        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        print("Response " + str(res))
+
+        return jsonify(res)
+
+@app.route('/deploy', methods=['GET','POST'])
+def deploy_method():
+    if request.method == 'GET':
+        print("Receive a GET Request to Deploy")
+        model_name = request.args.get('model_name')
+
+        if model_name in watchdogs :
+            return 'Already deployed : ' + model_name
+
+        watchdog_ = WatchDog(model_name)
+        watchdog_.deploy()
+        watchdogs[model_name] = watchdog_
+        watchdog_.start()
+
+        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        print("Response " + str(res))
+
+        return jsonify(res)
+    if request.method == 'POST':
+        print("Receive a POST Request to Deploy")
+        model_name = request.json['model_name']
+
+        if model_name in watchdogs :
+            return 'Already deployed : ' + model_name
+
+        watchdog_ = WatchDog(model_name)
+        watchdog_.deploy()
+        watchdogs[model_name] = watchdog_
+        watchdog_.start()
+
+        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        print("Response " + str(res))
+
+        return jsonify(res)
+
 
 def print_verbose(verbose, msg):
     if verbose :
@@ -75,14 +120,24 @@ class WatchDog(threading.Thread):
     def __init__(self, model_name):
         threading.Thread.__init__(self) 
         self.model_name = model_name
+        self.latest_version = ""
 
         firebase_options = {'projectId':os.getenv("CRMS_META_REPOSITORY")}
         self.crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog"+":"+model_name)
         self.db = firestore.client(app=self.crms_firebase_app)
 
+        doc = self.db.collection('models').document(self.model_name).get()   # DocumentReference
+        if doc.exists :
+            d = doc.to_dict()
+            d['id']=doc.id
+            self.latest_version = d['latest']
+            print_verbose(True, "Model : " + d["id"] + ", Latest Version: "+d['latest'] )
+        else :
+            print_verbose(True, "Model " + self.model_name + " not exists.")
+
+
     def run(self):
         self.is_running = True
-        self.last_version = ""
 
         while self.is_running :
             doc = self.db.collection('models').document(self.model_name).get()   # DocumentReference
@@ -91,14 +146,14 @@ class WatchDog(threading.Thread):
                 d['id']=doc.id
                 print_verbose(True, "Model : " + d["id"] + ", Latest Version: "+d['latest'] )
                 # When a new version is uploaded
-                if self.last_version != "" and self.last_version != d['latest']:
+                if self.latest_version != "" and self.latest_version != d['latest']:
                     descs = crms.crms_desc(self.model_name)
                     for doc in descs: 
                         git_repository_url = doc['git_repository']
-                        print_verbose(True, '[CRMS] PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                        crms.crms_pull(git_repository_url, 'latest', "/models/"+self.model_name, verbose=True)
+                        print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
+                        crms.crms_pull(git_repository_url, 'latest', CRMS_MODEL_DIR+"/"+self.model_name, verbose=True)
                         print_verbose(True, "Send Re-deploy request to ComCom Agent(" + os.getenv("COMCOM_AGENT") + ")" )
-                self.last_version = d['latest']
+                self.latest_version = d['latest']
             else :
                 print_verbose(True, "Model " + self.model_name + " not exists.")
                 break
@@ -107,6 +162,23 @@ class WatchDog(threading.Thread):
 
         del watchdogs[self.model_name]
         print_verbose(True, "Watchdog for " + self.model_name + " stopped.")
+
+    def deploy(self):
+            doc = self.db.collection('models').document(self.model_name).get()   # DocumentReference
+            if doc.exists :
+                d = doc.to_dict()
+                d['id']=doc.id
+                print_verbose(True, "Model : " + d["id"] + ", Latest Version: "+d['latest'] )
+                # When a new version is uploaded
+                descs = crms.crms_desc(self.model_name)
+                for doc in descs: 
+                    git_repository_url = doc['git_repository']
+                    print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
+                    crms.crms_pull(git_repository_url, 'latest', CRMS_MODEL_DIR+"/"+self.model_name, verbose=True)
+
+                self.latest_version = d['latest']
+            else :
+                print_verbose(True, "Model " + self.model_name + " not exists.")
 
     def stop(self):
         self.is_running = False
