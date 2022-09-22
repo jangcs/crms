@@ -33,11 +33,11 @@ host_port = 5000
 
 watchdogs = {}
 
-CRMS_MODEL_DIR="/models"
+CRMS_MODELS_DIR="/models"
 
 @app.route('/')
 def hello():
-    models = os.listdir(CRMS_MODEL_DIR)
+    models = os.listdir(CRMS_MODELS_DIR)
     models.sort()
     res = {'crms cached models': models}
     return jsonify(res)
@@ -50,6 +50,9 @@ def watchdog_method():
 
         if model_name in watchdogs :
             return 'Already monitoring ' + model_name
+
+        if not os.path.isdir(CRMS_MODELS_DIR+"/"+model_name) :
+            return 'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'            
 
         watchdog_ = WatchDog(model_name)
         watchdogs[model_name] = watchdog_
@@ -65,6 +68,9 @@ def watchdog_method():
 
         if model_name in watchdogs :
             return 'Already monitoring ' + model_name
+
+        if not os.path.isdir(CRMS_MODELS_DIR+"/"+model_name) :
+            return 'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'             
 
         watchdog_ = WatchDog(model_name)
         watchdogs[model_name] = watchdog_
@@ -121,7 +127,7 @@ class WatchDog(threading.Thread):
         threading.Thread.__init__(self) 
         self.model_name = model_name
         self.latest_version = ""
-
+        
         firebase_options = {'projectId':os.getenv("CRMS_META_REPOSITORY")}
         self.crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog"+":"+model_name)
         self.db = firestore.client(app=self.crms_firebase_app)
@@ -151,7 +157,7 @@ class WatchDog(threading.Thread):
                     for doc in descs: 
                         git_repository_url = doc['git_repository']
                         print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                        crms.crms_pull(git_repository_url, 'latest', CRMS_MODEL_DIR+"/"+self.model_name, verbose=True)
+                        crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
                         print_verbose(True, "Send Re-deploy request to ComCom Agent(" + os.getenv("COMCOM_AGENT") + ")" )
                 self.latest_version = d['latest']
             else :
@@ -174,7 +180,7 @@ class WatchDog(threading.Thread):
                 for doc in descs: 
                     git_repository_url = doc['git_repository']
                     print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                    crms.crms_pull(git_repository_url, 'latest', CRMS_MODEL_DIR+"/"+self.model_name, verbose=True)
+                    crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
 
                 self.latest_version = d['latest']
             else :
