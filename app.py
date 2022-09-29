@@ -57,8 +57,7 @@ def list_method():
 
     for model_name in model_list :
         model_desc = crms.crms_desc(model_name)
-        model_desc['watchdog'] = ""
-        res[model_name] = model_desc
+        res[model_name] = model_desc[0]
 
     # print("Response " + str(res))
 
