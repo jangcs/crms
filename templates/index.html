@@ -1,0 +1,17 @@
+<p> Deployed Model List </p>
+
+{% for model_name in deployed_models %}
+	<div id="{{model_name}}">  
+		<a href="/watchdog?model_name={{model_name}}" target="_bank"> {{model_name}} </a>
+	</div>
+{% endfor %}
+
+
+<p> Registered Model List </p>
+
+{% for model_name in registered_models %}
+	<div id="{{model_name}}">  
+		<a href="/deploy?model_name={{model_name}}" target="_bank"> {{model_name}} </a>
+	</div>
+{% endfor %}
+

@@ -16,8 +16,7 @@ from firebase_admin import firestore
 import crms
 import threading, time
 
-from flask import Flask, jsonify, request
-
+from flask import Flask, jsonify, request, render_template
 
 
 #CRMS_META_REPOSITORY = ''
@@ -37,9 +36,32 @@ CRMS_MODELS_DIR="/models"
 
 @app.route('/')
 def hello():
-    models = os.listdir(CRMS_MODELS_DIR)
-    models.sort()
-    res = {'crms cached models': models}
+    deployed_models = os.listdir(CRMS_MODELS_DIR)
+    deployed_models.sort()
+
+    registered_models = crms.crms_list()
+    registered_models.sort()
+
+    for model in deployed_models :
+        registered_models.remove(model)
+
+    # res = {'crms cached models': models}
+    # return jsonify(res)
+    return render_template("index.html", deployed_models=deployed_models, registered_models=registered_models)
+
+
+@app.route('/list', methods=['GET'])
+def list_method():
+    res = {}
+    model_list = crms.crms_list()
+
+    for model_name in model_list :
+        model_desc = crms.crms_desc(model_name)
+        model_desc['watchdog'] = ""
+        res[model_name] = model_desc
+
+    # print("Response " + str(res))
+
     return jsonify(res)
 
 @app.route('/watchdog', methods=['GET','POST'])
