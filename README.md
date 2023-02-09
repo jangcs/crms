@@ -32,16 +32,17 @@ tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
 ```sh
 export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
 ```
+<!--
 * (1.5) bug fix of protobuf
 ```sh
 pip3 install protobuf==3.20.1
-pip3 install fsspec==2022.2.0
 ```
 * (1.6) dependency fix for fsspec
 ```sh
 pip3 install fsspec==2022.2.0
 ```
-* (1.7) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
+-->
+* (1.5) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
 ```sh
 export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
