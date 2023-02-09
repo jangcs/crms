@@ -26,6 +26,8 @@ tar -xf google-cloud-cli-395.0.0-linux-x86_64.tar.gz
     * Download Google Credential file (contact administrator of your Google Cloud Project)
         * Access permission of credential may be one of reading or writing (writing permission is necessary for a full test)
         * In case of reading permission, crms push command is not allowed (crms list/desc/pull commands are allowed) 
+    * Default credential for the reader of google cloud robot project is cloudrobotai-reader-cred.zip
+        * unzip cloudrobotai-reader-cred.zip 
     * Set GOOGLE_APPLICATION_CREDENTIALS into ~/.bashrc
 ```sh
 export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
@@ -33,8 +35,13 @@ export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credenti
 * (1.5) bug fix of protobuf
 ```sh
 pip3 install protobuf==3.20.1
+pip3 install fsspec==2022.2.0
 ```
-* (1.6) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
+* (1.6) dependency fix for fsspec
+```sh
+pip3 install fsspec==2022.2.0
+```
+* (1.7) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
 ```sh
 export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
@@ -46,10 +53,11 @@ git clone https://github.com/jangcs/crms.git
 cd crms
 pip3 install .
 ```
-<!-- 
-echo "export PATH=\$PATH:$PWD" >> ~/.bashrc
-source ~/.bashrc
--->
+* If error occurs during install
+```sh
+pip3 install --upgrade pip
+[reboot if necessary, and try to install again]
+```
 * (2.2) For just install (not for test): Install from PyPi
 ```sh
 pip3 install crms
