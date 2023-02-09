@@ -53,7 +53,7 @@ git clone https://github.com/jangcs/crms.git
 cd crms
 pip3 install .
 ```
-* If error occurs during install
+* If error occurs during installation in /crms
 ```sh
 pip3 install --upgrade pip
 [reboot if necessary, and try to install again]
