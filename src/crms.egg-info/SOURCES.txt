@@ -1,0 +1,13 @@
+README.md
+setup.py
+src/crms/__init__.py
+src/crms/crms.py
+src/crms/watchdog.py
+src/crms.egg-info/PKG-INFO
+src/crms.egg-info/SOURCES.txt
+src/crms.egg-info/dependency_links.txt
+src/crms.egg-info/entry_points.txt
+src/crms.egg-info/requires.txt
+src/crms.egg-info/top_level.txt
+src/crms/other_data/m1.pth
+src/crms/other_data/m2.pth

@@ -1,0 +1,3 @@
+[console_scripts]
+crms = crms.crms:main
+

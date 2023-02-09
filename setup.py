@@ -6,12 +6,13 @@ install_requires = [
     'GitPython==3.1.27',
     'firebase-admin==5.2.0',
     'protobuf==3.20.1',
-    'requests>=2.28.1'
+	'requests>=2.28.1',
+	'fsspec==2022.2.0'
 ]
 
 setup(
     name='crms',
-    version='0.12',
+    version='2023.02.09',
     description='Cloud Robot Model Sharing Middleware',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',

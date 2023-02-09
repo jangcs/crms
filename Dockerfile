@@ -19,6 +19,7 @@ RUN tar -xf ./google-cloud-cli-395.0.0-linux-x86_64.tar.gz
 RUN ./google-cloud-sdk/install.sh
 
 COPY app.py /app/app.py
+COPY templates/index.html /app/templates/index.html
 
 WORKDIR /app
 
