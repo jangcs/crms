@@ -3,11 +3,12 @@
 ## (0) Preparation
 * (0.1) PIP3 must be prepared.
 ```sh
-sudo apt install python3-pip
+sudo apt-get update -y
+sudo apt-get install python3-pip
 ```
 * (0.2) Git must be prepared and configured
 ```sh
-sudo apt install git
+sudo apt-get install git
 git config --global user.name “Your Name”
 git config --global user.email your-email@xxx.com
 ```
@@ -48,16 +49,16 @@ export CRMS_META_REPOSITORY=your-google-cloud-project
 ```
 
 ## (2) Install crms from Github or PyPi 
+* (2.0) pip upgrade is required before install crms
+```sh
+pip3 install --upgrade pip
+[reboot if necessary, and try to install again]
+```
 * (2.1) For full test : Download crms from Github and install with pip3
 ```sh
 git clone https://github.com/jangcs/crms.git
 cd crms
 pip3 install .
-```
-* If error occurs during installation in /crms
-```sh
-pip3 install --upgrade pip
-[reboot if necessary, and try to install again]
 ```
 * (2.2) For just install (not for test): Install from PyPi
 ```sh

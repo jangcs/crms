@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: crms
-Version: 2023.2.9
+Version: 2023.2.13.1416
 Summary: Cloud Robot Model Sharing Middleware
 Home-page: https://github.com/jangcs/crms
 Author: jangcs
@@ -40,16 +40,17 @@ Description: **CRMS CLI Installation**
         ```sh
         export GOOGLE_APPLICATION_CREDENTIALS=”/path/to/<google-cloud-project-credential>.json”
         ```
+        <!--
         * (1.5) bug fix of protobuf
         ```sh
         pip3 install protobuf==3.20.1
-        pip3 install fsspec==2022.2.0
         ```
         * (1.6) dependency fix for fsspec
         ```sh
         pip3 install fsspec==2022.2.0
         ```
-        * (1.7) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
+        -->
+        * (1.5) (optional) Set a environment variable (CRMS_META_REPOSITORY) for Google Firestore (Default='croudrobotai')
         ```sh
         export CRMS_META_REPOSITORY=your-google-cloud-project
         ```
