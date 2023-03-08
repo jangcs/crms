@@ -735,7 +735,7 @@ def crms_list_cli(args):
         print(doc_id)
     print_verbose(args.verbose, "CRMS LIST Completed !!!")
 
-CRMS_VERSION_STR = "2023.03.08.1643"
+CRMS_VERSION_STR = "2023.03.08.1655"
 
 def crms_ver(verbose=False):
     print_verbose(verbose, "Print Version")
