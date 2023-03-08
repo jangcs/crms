@@ -621,10 +621,7 @@ def crms_clone(arg_model_url, arg_target='', verbose=False):
             print_verbose(verbose,"Failed to pull model files...")
             raise Exception("CRMS failed to pull model files...")
 
-
-def crms_clone_cli(args):
-    print_verbose(args.verbose, "CRMS CLONE....")
-    
+2023.03.08.1643
     if args.target != '' :
         arg_target = args.target
     else :
@@ -693,6 +690,12 @@ def crms_desc_cli(args):
     for doc in doc_dicts: 
         print(doc["id"])
         print('\tRepository: '+doc['git_repository'])
+        
+        platform = doc['platform']
+        print('\tPlatform')
+        for k in platform.keys():
+            print('\t\t' + k + ': ' + platform[k])
+
         print('\tVersions')
         versions = doc['versions']
         for v in versions :
@@ -732,7 +735,7 @@ def crms_list_cli(args):
         print(doc_id)
     print_verbose(args.verbose, "CRMS LIST Completed !!!")
 
-CRMS_VERSION_STR = "2023.02.16"
+CRMS_VERSION_STR = "2023.03.08.1643"
 
 def crms_ver(verbose=False):
     print_verbose(verbose, "Print Version")
