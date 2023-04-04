@@ -91,7 +91,7 @@ def watchdog_method():
         watchdogs[(module_name, model_name)] = watchdog_
         watchdog_.start()
 
-        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        res = {'status': 'Success','model':model_name, 'version':model_version, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
         print("Response " + str(res))
 
         return jsonify(res)
@@ -134,7 +134,7 @@ def deploy_method():
         watchdogs[(module_name,model_name)] = watchdog_
         watchdog_.start()
 
-        res = {'status': 'Success', 'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        res = {'status': 'Success', 'model':model_name, 'version':model_version, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
         print("Response " + str(res))
 
         return jsonify(res)
