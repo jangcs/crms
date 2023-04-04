@@ -126,11 +126,15 @@ def deploy_method():
             return 'Already deployed : ' + model_name + " to module(" + module_name + ")"
 
         watchdog_ = WatchDog(module_name, model_name, model_version)
-        watchdog_.deploy()
+        deploy_ok = watchdog_.deploy()
+        if deploy_ok != True :
+            res = {'status': 'Failed' }
+            return jsonify(res)
+
         watchdogs[(module_name,model_name)] = watchdog_
         watchdog_.start()
 
-        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+        res = {'status': 'Success', 'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
         print("Response " + str(res))
 
         return jsonify(res)
@@ -224,11 +228,17 @@ class WatchDog(threading.Thread):
                     git_repository_url = doc['git_repository']
                     print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
                     # crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
-                    crms.crms_pull(git_repository_url, self.model_version, CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
+                    try : 
+                        crms.crms_pull(git_repository_url, self.model_version, CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
+                    except : 
+                        return False
 
                 self.latest_version = d['latest']
             else :
                 print_verbose(True, "Model " + self.model_name + " not exists.")
+                return False
+
+            return True
 
     def stop(self):
         self.is_running = False
