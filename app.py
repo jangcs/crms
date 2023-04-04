@@ -24,7 +24,8 @@ from flask import Flask, jsonify, request, render_template
 
 dotenv.load_dotenv()
 
-crms_firebase_app = None
+firebase_options = {'projectId':os.getenv("CRMS_META_REPOSITORY")}
+crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog")
 
 app = Flask(__name__)
 host_addr = "0.0.0.0"
@@ -128,6 +129,8 @@ def deploy_method():
         watchdog_ = WatchDog(module_name, model_name, model_version)
         deploy_ok = watchdog_.deploy()
         if deploy_ok != True :
+            watchdog_.db.close()
+            del watchdog_
             res = {'status': 'Failed' }
             return jsonify(res)
 
@@ -176,7 +179,9 @@ class WatchDog(threading.Thread):
 
         firebase_options = {'projectId':os.getenv("CRMS_META_REPOSITORY")}
         
-        self.crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog"+":"+module_name+"."+model_name)
+        # self.crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog"+":"+module_name+"."+model_name)
+        self.crms_firebase_app = crms_firebase_app
+
         self.db = firestore.client(app=self.crms_firebase_app)
 
         doc = self.db.collection('models').document(self.model_name).get()   # DocumentReference
@@ -197,7 +202,7 @@ class WatchDog(threading.Thread):
             if doc.exists :
                 d = doc.to_dict()
                 d['id']=doc.id
-                print_verbose(True, "Model : " + d["id"] + ", Latest Version: "+d['latest'] )
+                print_verbose(True, "Module : " + self.module_name +", Model : " + d["id"] + ", Latest Version: "+d['latest'] )
                 # When a new version is uploaded
                 if self.latest_version != "" and self.latest_version != d['latest']:
                     descs = crms.crms_desc(self.model_name)
