@@ -32,18 +32,28 @@ host_port = 5000
 
 watchdogs = {}
 
-CRMS_MODELS_DIR="/models"
+CRMS_MODELS_DIR="/crms-models"
 
 @app.route('/')
 def hello():
-    deployed_models = os.listdir(CRMS_MODELS_DIR)
-    deployed_models.sort()
+    deployed_models = {}
+
+    modules = os.listdir(CRMS_MODELS_DIR)
+    modules.sort()
+
+    for d in modules :
+        deployed_models[d] = []
+
+        models = os.listdir(os.path.join(CRMS_MODELS_DIR, d))
+        for m in models :
+            deployed_models[d].append(m)
 
     registered_models = crms.crms_list()
     registered_models.sort()
 
-    for model in deployed_models :
-        registered_models.remove(model)
+    # for model in deployed_models :
+    #     if model in registered_models :
+    #         registered_models.remove(model)
 
     # res = {'crms cached models': models}
     # return jsonify(res)
@@ -67,75 +77,79 @@ def list_method():
 def watchdog_method():
     if request.method == 'GET':
         print("Receive a GET Request for Watchdog")
-        model_name = request.args.get('model_name')
+        module_name = request.args.get('module_name').strip()
+        model_name = request.args.get('model_name').strip()
+        model_version = request.args.get('model_version').strip()
 
-        if model_name in watchdogs :
-            return 'Already monitoring ' + model_name
+        if (module_name, model_name) in watchdogs :
+            return 'Already monitoring ' + model_name + " in module(" + module_name + ")"
 
-        if not os.path.isdir(CRMS_MODELS_DIR+"/"+model_name) :
+        if not os.path.isdir( os.path.join(CRMS_MODELS_DIR, module_name, model_name) ) :
             return 'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'            
 
-        watchdog_ = WatchDog(model_name)
-        watchdogs[model_name] = watchdog_
+        watchdog_ = WatchDog(module_name, model_name, model_version)
+        watchdogs[(module_name, model_name)] = watchdog_
         watchdog_.start()
 
         res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
         print("Response " + str(res))
 
         return jsonify(res)
-    if request.method == 'POST':
-        print("Receive a POST Request for Watchdog")
-        model_name = request.json['model_name']
+    # if request.method == 'POST':
+    #     print("Receive a POST Request for Watchdog")
+    #     model_name = request.json['model_name']
 
-        if model_name in watchdogs :
-            return 'Already monitoring ' + model_name
+    #     if model_name in watchdogs :
+    #         return 'Already monitoring ' + model_name
 
-        if not os.path.isdir(CRMS_MODELS_DIR+"/"+model_name) :
-            return 'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'             
+    #     if not os.path.isdir(CRMS_MODELS_DIR+"/"+model_name) :
+    #         return 'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'             
 
-        watchdog_ = WatchDog(model_name)
-        watchdogs[model_name] = watchdog_
-        watchdog_.start()
+    #     watchdog_ = WatchDog(model_name)
+    #     watchdogs[model_name] = watchdog_
+    #     watchdog_.start()
 
-        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
-        print("Response " + str(res))
+    #     res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+    #     print("Response " + str(res))
 
-        return jsonify(res)
+    #     return jsonify(res)
 
 @app.route('/deploy', methods=['GET','POST'])
 def deploy_method():
     if request.method == 'GET':
         print("Receive a GET Request to Deploy")
-        model_name = request.args.get('model_name')
+        module_name = request.args.get('module_name').strip()
+        model_name = request.args.get('model_name').strip()
+        model_version = request.args.get('model_version').strip()
 
-        if model_name in watchdogs :
-            return 'Already deployed : ' + model_name
+        if (module_name, model_name) in watchdogs :
+            return 'Already deployed : ' + model_name + " to module(" + module_name + ")"
 
-        watchdog_ = WatchDog(model_name)
+        watchdog_ = WatchDog(module_name, model_name, model_version)
         watchdog_.deploy()
-        watchdogs[model_name] = watchdog_
+        watchdogs[(module_name,model_name)] = watchdog_
         watchdog_.start()
 
         res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
         print("Response " + str(res))
 
         return jsonify(res)
-    if request.method == 'POST':
-        print("Receive a POST Request to Deploy")
-        model_name = request.json['model_name']
+    # if request.method == 'POST':
+    #     print("Receive a POST Request to Deploy")
+    #     model_name = request.json['model_name']
 
-        if model_name in watchdogs :
-            return 'Already deployed : ' + model_name
+    #     if model_name in watchdogs :
+    #         return 'Already deployed : ' + model_name
 
-        watchdog_ = WatchDog(model_name)
-        watchdog_.deploy()
-        watchdogs[model_name] = watchdog_
-        watchdog_.start()
+    #     watchdog_ = WatchDog(model_name)
+    #     watchdog_.deploy()
+    #     watchdogs[model_name] = watchdog_
+    #     watchdog_.start()
 
-        res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
-        print("Response " + str(res))
+    #     res = {'model':model_name, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+    #     print("Response " + str(res))
 
-        return jsonify(res)
+    #     return jsonify(res)
 
 
 def print_verbose(verbose, msg):
@@ -144,13 +158,21 @@ def print_verbose(verbose, msg):
 
 
 class WatchDog(threading.Thread):
-    def __init__(self, model_name):
+    def __init__(self, module_name, model_name, model_version):
         threading.Thread.__init__(self) 
+        self.module_name = module_name
         self.model_name = model_name
+        self.model_version = model_version
+
         self.latest_version = ""
         
+        if not os.path.exists(CRMS_MODELS_DIR+"/"+self.module_name) :
+            os.makedirs(CRMS_MODELS_DIR+"/"+self.module_name)
+            print_verbose(True, 'Cache directory for the module(' +  self.module_name + ') was created.')
+
         firebase_options = {'projectId':os.getenv("CRMS_META_REPOSITORY")}
-        self.crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog"+":"+model_name)
+        
+        self.crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name="CRMS_WatchDog"+":"+module_name+"."+model_name)
         self.db = firestore.client(app=self.crms_firebase_app)
 
         doc = self.db.collection('models').document(self.model_name).get()   # DocumentReference
@@ -178,7 +200,7 @@ class WatchDog(threading.Thread):
                     for doc in descs: 
                         git_repository_url = doc['git_repository']
                         print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                        crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
+                        crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
                         print_verbose(True, "Send Re-deploy request to ComCom Agent(" + os.getenv("COMCOM_AGENT") + ")" )
                 self.latest_version = d['latest']
             else :
@@ -201,7 +223,8 @@ class WatchDog(threading.Thread):
                 for doc in descs: 
                     git_repository_url = doc['git_repository']
                     print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                    crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
+                    # crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
+                    crms.crms_pull(git_repository_url, self.model_version, CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
 
                 self.latest_version = d['latest']
             else :

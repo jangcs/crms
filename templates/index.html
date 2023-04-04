@@ -1,19 +1,43 @@
 <p> Deployed Model List </p>
 
-{% for model_name in deployed_models %}
-	<div id="{{model_name}}">  
-		<a href="/watchdog?model_name={{model_name}}" target="_bank"> {{model_name}} </a>
+{% for module_name in deployed_models %}
+	<b> {{module_name}} </b>
+	<div id="{{module_name}}">  
+		{% for model_name in deployed_models[module_name] %}
+			<a href="/watchdog?module_name={{module_name}}&model_name={{model_name}}&model_version=v0.1&update_policy=UpdateOnRunning" target="_bank"> {{model_name}} </a>
+			<br>
+		{% endfor %}
 	</div>
 {% endfor %}
 
 
 <p> Registered Model List </p>
 
-{% for model_name in registered_models %}
-	<div id="{{model_name}}">  
-		<a href="/deploy?model_name={{model_name}}" target="_bank"> {{model_name}} </a>
-	</div>
-{% endfor %}
+<form action='/deploy'>
+
+	<strong>Select button to deploy.</strong>
+	<br>
+
+	{% for model_name in registered_models %}
+	<!--div id="{{model_name}}">  
+		<a href="/deploy?module_name=Module{{model_name}}&model_name={{model_name}}&model_version=v0.1&update_policy=UpdateOnRunning" target="_bank"> {{model_name}} </a> 	<input type="submit" value="제출">
+
+	</div-->
+
+	<input type="submit" name="model_name" value="{{model_name}}">
+	<br>
+	{% endfor %}
+	<strong>module_name</strong>
+	<input type="text" name="module_name" value="test">
+	<strong>model_version</strong>
+	<input type="text" name="model_version" value="latest">
+	<br>
+	<input type="radio" name="update_policy" value="NoUpdate"> NoUpdate
+	<input type="radio" name="update_policy" value="UpdateOnStart"> UpdateOnStart
+	<input type="radio" name="update_policy" value="UpdateOnRunning" checked> UpdateOnRunning
+	<br>
+
+</form>
 
 <p>
 <a href="/list" target="_blank">  All Description of Models </a>
