@@ -454,6 +454,19 @@ def crms_pull(arg_model_url, arg_version, arg_target='', verbose=False):
     # modified_model_url = arg_model_url.replace('git@github.com:','https://github.com/',1)
     modified_model_url = arg_model_url.replace('git@github.com:', 'https://github.com/',1)
 
+    if not modified_model_url.startswith('https://github.com/') :
+        print_verbose(verbose, "Try to find a model using model name instead of model url...")
+        model_name  = modified_model_url
+        doc_dicts = crms_desc(model_name, verbose=verbose)
+        if len(doc_dicts) ==  0 :
+            print_verbose(verbose, "ERROR: model for " +  arg_model_url  + " does not exist.")
+            raise Exception("CRMS ERROR: model for " +  arg_model_url  + " does not exist.")
+
+        doc = doc_dicts[0]
+        git_repository = doc['git_repository']
+
+        modified_model_url = git_repository.replace('git@github.com:', 'https://github.com/',1)
+
     if arg_target != '' :
         target = arg_target
     else :
@@ -591,6 +604,20 @@ def crms_clone(arg_model_url, arg_target='', verbose=False):
     # repo = Repo.clone_from("git@github.com:jangcs/KKK.git", os.getcwd() )
     # modified_model_url = arg_model_url.replace('git@github.com:','https://github.com/',1)
     modified_model_url = arg_model_url.replace('https://github.com/', 'git@github.com:',1)
+
+    if not modified_model_url.startswith('git@github.com:') :
+        print_verbose(verbose, "Try to find a model using model name instead of model url...")
+        model_name  = modified_model_url
+        doc_dicts = crms_desc(model_name, verbose=verbose)
+        if len(doc_dicts) ==  0 :
+            print_verbose(verbose, "ERROR: model for " +  arg_model_url  + " does not exist.")
+            raise Exception("CRMS ERROR: model for " +  arg_model_url  + " does not exist.")
+
+        doc = doc_dicts[0]
+        git_repository = doc['git_repository']
+
+        modified_model_url = git_repository.replace('git@github.com:', 'https://github.com/',1)
+
 
     if arg_target != '' :
         target = arg_target
@@ -738,7 +765,7 @@ def crms_list_cli(args):
         print(doc_id)
     print_verbose(args.verbose, "CRMS LIST Completed !!!")
 
-CRMS_VERSION_STR = "2023.03.08.1705"
+CRMS_VERSION_STR = "2023.04.05.1739"
 
 def crms_ver(verbose=False):
     print_verbose(verbose, "Print Version")
