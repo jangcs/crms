@@ -29,7 +29,7 @@ crms_firebase_app = firebase_admin.initialize_app(options=firebase_options, name
 
 app = Flask(__name__)
 host_addr = "0.0.0.0"
-host_port = 5000
+host_port = 6537
 
 watchdogs = {}
 
