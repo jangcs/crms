@@ -10,6 +10,7 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get install -y git
 RUN pip3 install flask 
+RUN pip3 install pyyaml 
 RUN pip3 install crms
 RUN pip3 install dvc[gs]
 RUN pip3 install python-dotenv
