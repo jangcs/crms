@@ -12,7 +12,7 @@ install_requires = [
 
 setup(
     name='crms',
-    version='2023.04.05.1739',
+    version='2023.05.03.1340',
     description='Cloud Robot Model Sharing Middleware',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
