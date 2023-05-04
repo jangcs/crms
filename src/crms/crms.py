@@ -616,8 +616,7 @@ def crms_clone(arg_model_url, arg_target='', verbose=False):
         doc = doc_dicts[0]
         git_repository = doc['git_repository']
 
-        modified_model_url = git_repository.replace('git@github.com:', 'https://github.com/',1)
-
+        modified_model_url = git_repository.replace('https://github.com/','git@github.com:', 1)
 
     if arg_target != '' :
         target = arg_target
