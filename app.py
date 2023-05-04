@@ -163,27 +163,28 @@ def deploy_method():
 
     #     return jsonify(res)
 
+### For test to receive re-deploy request
+### Do not use this method 
+# @app.route('/redeploy', methods=['GET','POST'])
+# def redeploy_method():
+#     print("Called redeploy_method")
+#     if request.method == 'GET':
+#         print("Receive a GET Request to Re-deploy")
+#         module_name = request.args.get('module_name').strip()
+#         model_name = request.args.get('model_name').strip()
 
-@app.route('/redeploy', methods=['GET','POST'])
-def redeploy_method():
-    print("Called redeploy_method")
-    if request.method == 'GET':
-        print("Receive a GET Request to Re-deploy")
-        module_name = request.args.get('module_name').strip()
-        model_name = request.args.get('model_name').strip()
-
-        print(module_name + ":" + model_name)
+#         print(module_name + ":" + model_name)
         
-        res = {'status': 'Success' }
-        return jsonify(res)
+#         res = {'status': 'Success' }
+#         return jsonify(res)
 
-    if request.method == 'POST':
-        print("Receive a POST Request to Re-deploy")
-        # data = request.get_json()
+#     if request.method == 'POST':
+#         print("Receive a POST Request to Re-deploy")
+#         # data = request.get_json()
         
-        # print('Received Json : ' + data)
-        res = {'status': 'Success' }
-        return jsonify(res)
+#         # print('Received Json : ' + data)
+#         res = {'status': 'Success' }
+#         return jsonify(res)
 
 
 def print_verbose(verbose, msg):
