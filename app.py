@@ -8,6 +8,8 @@ import subprocess
 import argparse
 import yaml
 import dotenv 
+import requests
+import json
 
 import firebase_admin
 from firebase_admin import credentials
@@ -83,10 +85,12 @@ def watchdog_method():
         model_version = request.args.get('model_version').strip()
 
         if (module_name, model_name) in watchdogs :
-            return 'Already monitoring ' + model_name + " in module(" + module_name + ")"
+            res = {'status': 'Failure','reason':'Already monitoring ' + model_name + ' in module(' + module_name + ')'}
+            return jsonify(res)
 
         if not os.path.isdir( os.path.join(CRMS_MODELS_DIR, module_name, model_name) ) :
-            return 'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'            
+            res = {'status': 'Failure','reason':'Model(' +  model_name + ') has not been deployed yet. Deploy the model first !!!'}
+            return jsonify(res)
 
         watchdog_ = WatchDog(module_name, model_name, model_version)
         watchdogs[(module_name, model_name)] = watchdog_
@@ -124,14 +128,15 @@ def deploy_method():
         model_version = request.args.get('model_version').strip()
 
         if (module_name, model_name) in watchdogs :
-            return 'Already deployed : ' + model_name + " to module(" + module_name + ")"
+            res = {'status': 'Failure','reason': 'Already deployed : ' + model_name + ' to module(' + module_name + ')'}
+            return jsonify(res)
 
         watchdog_ = WatchDog(module_name, model_name, model_version)
         deploy_ok = watchdog_.deploy()
         if deploy_ok != True :
             watchdog_.db.close()
             del watchdog_
-            res = {'status': 'Failed' }
+            res = {'status': 'Failure' }
             return jsonify(res)
 
         watchdogs[(module_name,model_name)] = watchdog_
@@ -157,6 +162,28 @@ def deploy_method():
     #     print("Response " + str(res))
 
     #     return jsonify(res)
+
+
+@app.route('/redeploy', methods=['GET','POST'])
+def redeploy_method():
+    print("Called redeploy_method")
+    if request.method == 'GET':
+        print("Receive a GET Request to Re-deploy")
+        module_name = request.args.get('module_name').strip()
+        model_name = request.args.get('model_name').strip()
+
+        print(module_name + ":" + model_name)
+        
+        res = {'status': 'Success' }
+        return jsonify(res)
+
+    if request.method == 'POST':
+        print("Receive a POST Request to Re-deploy")
+        # data = request.get_json()
+        
+        # print('Received Json : ' + data)
+        res = {'status': 'Success' }
+        return jsonify(res)
 
 
 def print_verbose(verbose, msg):
@@ -206,11 +233,28 @@ class WatchDog(threading.Thread):
                 # When a new version is uploaded
                 if self.latest_version != "" and self.latest_version != d['latest']:
                     descs = crms.crms_desc(self.model_name)
-                    for doc in descs: 
-                        git_repository_url = doc['git_repository']
-                        print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                        crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
-                        print_verbose(True, "Send Re-deploy request to ComCom Agent(" + os.getenv("COMCOM_AGENT") + ")" )
+                    # for doc in descs: 
+                    doc = descs[0]
+
+                    git_repository_url = doc['git_repository']
+                    print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
+                    crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
+
+                    print_verbose(True, "Send Re-deploy request to ComCom Agent(" + os.getenv("COMCOM_AGENT") + ")" )
+                    request_body = {'module_name': self.module_name, 'model_name' : self.model_name}
+                    response = requests.post("http://" + os.getenv("COMCOM_AGENT") + "/redeploy", data=json.dumps(request_body))
+
+                    if response.status_code == 200 :
+                        json_dict = json.loads(response.text)
+                        if 'status' in json_dict and json_dict['status'].upper() == 'SUCCESS' :
+                                pass   # Success
+                        else :
+                            print_verbose(True, "Errors were occured during reployment of module (" + self.module_name + ")." )
+                            break
+                    else :
+                        print_verbose(True, "Errors were occured during request for reployment to Deploy_Agent")
+                        break
+
                 self.latest_version = d['latest']
             else :
                 print_verbose(True, "Model " + self.model_name + " not exists.")
@@ -218,7 +262,7 @@ class WatchDog(threading.Thread):
 
             time.sleep(int(os.getenv("WATCHDOG_PERIOD", 5)))
 
-        del watchdogs[self.model_name]
+        del watchdogs[(self.module_name, self.model_name)]
         print_verbose(True, "Watchdog for " + self.model_name + " stopped.")
 
     def deploy(self):
@@ -229,14 +273,15 @@ class WatchDog(threading.Thread):
                 print_verbose(True, "Model : " + d["id"] + ", Latest Version: "+d['latest'] )
                 # When a new version is uploaded
                 descs = crms.crms_desc(self.model_name)
-                for doc in descs: 
-                    git_repository_url = doc['git_repository']
-                    print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
-                    # crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
-                    try : 
-                        crms.crms_pull(git_repository_url, self.model_version, CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
-                    except : 
-                        return False
+                doc = descs[0]
+                # for doc in descs: 
+                git_repository_url = doc['git_repository']
+                print_verbose(True, 'PULL Model : model = ' +  doc['id'] + ', version = '+doc['latest'])
+                # crms.crms_pull(git_repository_url, 'latest', CRMS_MODELS_DIR+"/"+self.model_name, verbose=True)
+                try : 
+                    crms.crms_pull(git_repository_url, self.model_version, CRMS_MODELS_DIR+"/"+self.module_name+"/"+self.model_name, verbose=True)
+                except : 
+                    return False
 
                 self.latest_version = d['latest']
             else :
