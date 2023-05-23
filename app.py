@@ -126,26 +126,59 @@ def deploy_method():
         module_name = request.args.get('module_name').strip()
         model_name = request.args.get('model_name').strip()
         model_version = request.args.get('model_version').strip()
+        update_policy = request.args.get('update_policy').strip()
 
         if (module_name, model_name) in watchdogs :
             res = {'status': 'Failure','reason': 'Already deployed : ' + model_name + ' to module(' + module_name + ')'}
             return jsonify(res)
 
         watchdog_ = WatchDog(module_name, model_name, model_version)
-        deploy_ok = watchdog_.deploy()
-        if deploy_ok != True :
-            watchdog_.db.close()
-            del watchdog_
-            res = {'status': 'Failure' }
+        if update_policy.upper() == "NOUPDATE" : 
+            if os.path.exists(CRMS_MODELS_DIR+"/"+module_name+"/"+model_name) : # already cached
+                res = {'status': 'Success', 'model':model_name, 'version' : 'cached'}
+                print("Response " + str(res))
+                return jsonify(res)
+            else : 
+                deploy_ok = watchdog_.deploy()
+                if deploy_ok != True :
+                    watchdog_.db.close()
+                    del watchdog_
+                    res = {'status': 'Failure' }
+                    return jsonify(res)
+                res = {'status': 'Success', 'model':model_name, 'version':model_version, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+                print("Response " + str(res))
+                return jsonify(res)
+        elif update_policy.upper() == "UPDATEONSTART" :
+            deploy_ok = watchdog_.deploy()
+            if deploy_ok != True :
+                watchdog_.db.close()
+                del watchdog_
+                res = {'status': 'Failure' }
+                return jsonify(res)
+            res = {'status': 'Success', 'model':model_name, 'version':model_version, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+            print("Response " + str(res))
+            return jsonify(res)
+        elif update_policy.upper() == "UPDATEONRUNNING"  :
+            deploy_ok = watchdog_.deploy()
+            if deploy_ok != True :
+                watchdog_.db.close()
+                del watchdog_
+                res = {'status': 'Failure' }
+                return jsonify(res)
+
+            watchdogs[(module_name,model_name)] = watchdog_
+            watchdog_.start()
+
+            res = {'status': 'Success', 'model':model_name, 'version':model_version, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
+            print("Response " + str(res))
+            return jsonify(res)
+        else :
+            res = {'status': 'Failure','reason': 'update_policy(' + update_policy +  ') was wrong.'}
+            print("Response " + str(res))
             return jsonify(res)
 
-        watchdogs[(module_name,model_name)] = watchdog_
-        watchdog_.start()
 
-        res = {'status': 'Success', 'model':model_name, 'version':model_version, 'latest':watchdog_.latest_version if watchdog_.latest_version != "" else "not exist"}
-        print("Response " + str(res))
 
-        return jsonify(res)
     # if request.method == 'POST':
     #     print("Receive a POST Request to Deploy")
     #     model_name = request.json['model_name']
