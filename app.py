@@ -132,6 +132,11 @@ def deploy_method():
             res = {'status': 'Failure','reason': 'Already deployed : ' + model_name + ' to module(' + module_name + ')'}
             return jsonify(res)
 
+        if model_version.upper() != 'LATEST' and (update_policy.upper() in ['UPDATEONSTART', 'UPDATEONRUNNING']) :
+            res = {'status': 'Failure','reason': 'update_policy('+ update_policy +') only allows latest version.'}
+            print("Response " + str(res))
+            return jsonify(res)
+
         watchdog_ = WatchDog(module_name, model_name, model_version)
         if update_policy.upper() == "NOUPDATE" : 
             if os.path.exists(CRMS_MODELS_DIR+"/"+module_name+"/"+model_name) : # already cached
